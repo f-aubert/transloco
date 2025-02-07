@@ -3,30 +3,27 @@ import {
   getBrowserLang,
   isBrowser,
   isFunction,
-  PersistStorage,
   TranslocoService,
-} from '@ngneat/transloco';
+} from '@jsverse/transloco';
 import { Subscription } from 'rxjs';
 import { skip } from 'rxjs/operators';
+import { inject, Injectable, OnDestroy } from '@angular/core';
+
 import {
-  PersistLangConfig,
   TRANSLOCO_PERSIST_LANG_CONFIG,
   TRANSLOCO_PERSIST_LANG_STORAGE,
 } from './persist-lang.config';
-import { Inject, Injectable, OnDestroy } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class TranslocoPersistLangService implements OnDestroy {
+  private service = inject(TranslocoService);
+  private storage = inject(TRANSLOCO_PERSIST_LANG_STORAGE);
+  private config = inject(TRANSLOCO_PERSIST_LANG_CONFIG);
+
   private subscription: Subscription | null = null;
-  private storageKey: string;
+  private storageKey = this.config.storageKey || 'translocoLang';
 
-  constructor(
-    private service: TranslocoService,
-    @Inject(TRANSLOCO_PERSIST_LANG_STORAGE) private storage: PersistStorage,
-    @Inject(TRANSLOCO_PERSIST_LANG_CONFIG) private config: PersistLangConfig
-  ) {
-    this.storageKey = config.storageKey || 'translocoLang';
-
+  constructor() {
     if (isBrowser()) {
       this.init();
     }
@@ -75,10 +72,10 @@ export class TranslocoPersistLangService implements OnDestroy {
   }
 
   private save(lang: string) {
-    if (this.service.config.prodMode === false) {
+    if (!this.service.config.prodMode) {
       console.log(
         `%c 🍻 Saving ${lang} to storage`,
-        'background: #fff; color: #2196F3;'
+        'background: #fff; color: #2196F3;',
       );
     }
     this.storage.setItem(this.storageKey, lang);

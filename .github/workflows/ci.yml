@@ -1,67 +1,45 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
-  build:
+  ci-step:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['ci:build', 'ci:test', 'ci:lint', 'ci:e2e']
     runs-on: ubuntu-latest
+    name: ${{ matrix.target }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      
-      - name: Npm install
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-      - run: npm i
+      - uses: actions/checkout@v4
 
-      - name: Run build
-        run: npm run ci:build
+      - name: Setup
+        uses: ./.github/actions/step-setup
 
+      - name: Run ${{ matrix.target }}
+        run: npm run ${{ matrix.target }}
+        shell: bash
 
-  test:
+      - name: Publish any commit / build for testing
+        if: ${{ matrix.target == 'ci:build' }}
+        run: npm run release:pkg-pr-new
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  commitlint:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Npm install
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
         with:
-          node-version: '16'
-          cache: 'npm'
-      - run: npm i
+          fetch-depth: 0
 
-      - name: Run tests
-        run: npm run ci:test
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/step-setup
 
-      - name: Npm install
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-      - run: npm i
-
-      - name: Run lint
-        run: npm run ci:lint
-  e2e:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Npm install
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-      - run: npm i
-
-      - name: Run E2E
-        run: npm run ci:e2e
+      - name: Validate PR commits with commitlint
+        run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose

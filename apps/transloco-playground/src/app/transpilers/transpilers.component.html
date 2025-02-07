@@ -14,11 +14,15 @@
     </li>
     <li class="list-group-item" data-cy="with-message-format">
       <b>Using messageformat: </b
-      >{{ t('mf.messageFormat', { gender: 'male', name: 'Henkie', gain: 1000 }) }}
+      >{{
+        t('mf.messageFormat', { gender: 'male', name: 'Henkie', gain: 1000 })
+      }}
     </li>
     <li class="list-group-item" data-cy="with-message-format-dynamic">
       <b>Using messageformat with dynamic value: </b
-      >{{ t('mf.messageFormat', { gender: userGender, name: 'Kim', gain: 2000 }) }}
+      >{{
+        t('mf.messageFormat', { gender: userGender, name: 'Kim', gain: 2000 })
+      }}
     </li>
     <li class="list-group-item" data-cy="with-message-format-params">
       <b>Using messageformat with transloco standard params: </b
@@ -27,14 +31,14 @@
           value: 'transloco params',
           gender: '',
           name: 'Joko',
-          gain: 3000
+          gain: 3000,
         })
       }}
     </li>
   </ul>
 </ng-container>
 
-<h3 class="mtb">Directive</h3>
+<h3 class="my-6">Directive</h3>
 <ul class="list-group">
   <li class="list-group-item" data-cy="d-regular">
     <b>Regular: </b><span transloco="mf.home"></span>
@@ -64,12 +68,17 @@
     <b>Using messageformat with transloco standard params: </b>
     <span
       transloco="mf.messageFormatWithParams"
-      [translocoParams]="{ value: 'transloco params', gender: '', name: 'Ono', gain: 3100 }"
+      [translocoParams]="{
+        value: 'transloco params',
+        gender: '',
+        name: 'Ono',
+        gain: 3100,
+      }"
     ></span>
   </li>
 </ul>
 
-<h3 class="mtb">Pipe</h3>
+<h3 class="my-6">Pipe</h3>
 <ul class="list-group">
   <li class="list-group-item" data-cy="p-regular">
     <b>Regular: </b>{{ 'mf.home' | transloco }}
@@ -82,17 +91,24 @@
   </li>
   <li class="list-group-item" data-cy="p-with-message-format">
     <b>Using messageformat: </b
-    >{{ 'mf.messageFormat' | transloco: { gender: 'male', name: 'Stef', gain: 1200 } }}
+    >{{
+      'mf.messageFormat'
+        | transloco: { gender: 'male', name: 'Stef', gain: 1200 }
+    }}
   </li>
   <li class="list-group-item" data-cy="p-with-message-format-dynamic">
     <b>Using messageformat with dynamic value: </b
-    >{{ 'mf.messageFormat' | transloco: { gender: userGender, name: 'Donna', gain: 2200 } }}
+    >{{
+      'mf.messageFormat'
+        | transloco: { gender: userGender, name: 'Donna', gain: 2200 }
+    }}
   </li>
   <li class="list-group-item" data-cy="p-with-message-format-params">
     <b>Using messageformat with transloco standard params: </b
     >{{
       'mf.messageFormatWithParams'
-        | transloco: { value: 'transloco params', gender: '', name: 'Mary', gain: 3200 }
+        | transloco
+          : { value: 'transloco params', gender: '', name: 'Mary', gain: 3200 }
     }}
   </li>
 </ul>

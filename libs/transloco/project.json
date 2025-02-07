@@ -1,13 +1,15 @@
 {
+  "name": "transloco",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "libs/transloco/src",
   "prefix": "transloco-nx-shell",
+  "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/angular:package",
-      "outputs": ["dist/libs/transloco"],
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/libs/transloco"],
       "options": {
-        "updateBuildableProjectDepsInPackageJson": false,
         "project": "libs/transloco/ng-package.json"
       },
       "configurations": {
@@ -29,18 +31,8 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/transloco/src/**/*.ts",
-          "libs/transloco/src/**/*.html"
-        ]
-      },
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
-    },
-    "version": {
-      "executor": "@jscutlery/semver:version"
     }
-  },
-  "tags": []
+  }
 }

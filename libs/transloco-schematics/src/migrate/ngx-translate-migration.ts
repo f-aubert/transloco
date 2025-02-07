@@ -1,6 +1,11 @@
+import * as p from 'node:path';
+
 import * as ora from 'ora';
-import * as p from 'path';
 import { replaceInFile } from 'replace-in-file';
+
+const PIPE_CONTENT_REGEX = `\\s*([^}\\r\\n]*?\\|)\\s*(translate)[^\\r\\n]*?`;
+export const PIPE_REGEX = `{{${PIPE_CONTENT_REGEX}}}`;
+export const PIPE_IN_BINDING_REGEX = `\\]=('|")${PIPE_CONTENT_REGEX}\\1`;
 
 // Example: `./src/ng2/**/*.html`;
 export function run(path) {
@@ -10,15 +15,14 @@ export function run(path) {
   path = p.join(dir, path, '/**/*');
 
   const noSpecFiles = { ignore: `${path}spec.ts`, files: `${path}.ts` };
-  const pipeContent = `\\s*([^}\\r\\n]*?\\|)\\s*(translate)\\s*(?::\\s*{[^}\\r\\n]+})?\\s*(\\s*\\|[\\s\\r\\t\\n]*\\w*)*\\s*`;
   const [directive, pipe, pipeInBinding] = [
     /(translate|\[translate(?:Params)?\])=("|')[^"']*\2/gm,
-    new RegExp(`{{${pipeContent}}}`, 'gm'),
-    new RegExp(`\\]=('|")${pipeContent}\\1`, 'gm'),
+    new RegExp(PIPE_REGEX, 'gm'),
+    new RegExp(PIPE_IN_BINDING_REGEX, 'gm'),
   ].map((regex) => ({
     files: `${path}.html`,
     from: regex,
-    to: (match) => match.replace('translate', 'transloco'),
+    to: (match) => match.replace(/translate/g, 'transloco'),
   }));
 
   const moduleMultiImport = {
@@ -30,13 +34,13 @@ export function run(path) {
         .replace(/,\s*,/, ',')
         .replace(/{\s*,/, '{')
         .replace(/,\s*}/, '}')
-        .concat(`\nimport { TranslocoModule } from '@ngneat/transloco';`),
+        .concat(`\nimport { TranslocoModule } from '@jsverse/transloco';`),
   };
 
   const moduleSingleImport = {
     files: `${path}.ts`,
     from: /import\s*{\s*(TranslateModule),?\s*}\s*from\s*('|").?ngx-translate(\/[^'"]+)?('|");?/g,
-    to: `import { TranslocoModule } from '@ngneat/transloco';`,
+    to: `import { TranslocoModule } from '@jsverse/transloco';`,
   };
 
   const modules = {
@@ -54,7 +58,7 @@ export function run(path) {
         .replace(/,\s*,/, ',')
         .replace(/{\s*,/, '{')
         .replace(/,\s*}/, '}')
-        .concat(`\nimport { TranslocoService } from '@ngneat/transloco';`),
+        .concat(`\nimport { TranslocoService } from '@jsverse/transloco';`),
   };
 
   const [serviceSingleImport, pipeImport] = [
@@ -63,7 +67,7 @@ export function run(path) {
   ].map((regex) => ({
     ...noSpecFiles,
     from: regex,
-    to: `import { TranslocoService } from '@ngneat/transloco';`,
+    to: `import { TranslocoService } from '@jsverse/transloco';`,
   }));
 
   const constructorInjection = {
@@ -96,9 +100,9 @@ export function run(path) {
       const serviceCallRgx = ({ map, func }) =>
         new RegExp(
           `(?:(?:\\s*|this\\.)${sanitizedName})(?:\\s*\\t*\\r*\\n*)*\\.(?:\\s*\\t*\\r*\\n*)*(${getTarget(
-            map
+            map,
           )})[\\r\\t\\n\\s]*${func ? '\\(' : '(?!\\()'}`,
-          'g'
+          'g',
         );
       const getTarget = (t) => Object.keys(t).join('|');
       return [
@@ -106,7 +110,10 @@ export function run(path) {
         { func: false, map: propsMap },
       ].reduce((acc, curr) => {
         return acc.replace(serviceCallRgx(curr), (str) =>
-          str.replace(new RegExp(getTarget(curr.map)), (func) => curr.map[func])
+          str.replace(
+            new RegExp(getTarget(curr.map)),
+            (func) => curr.map[func],
+          ),
         );
       }, match);
     },
@@ -154,6 +161,8 @@ export function run(path) {
   async function migrate(matchersArr, filesType) {
     console.log(`\nMigrating ${filesType} files 📜`);
     let spinner;
+    const isWindows = process.platform === 'win32';
+
     for (let i = 0; i < matchersArr.length; i++) {
       const { step, matchers } = matchersArr[i];
       const msg = `Step ${i + 1}/${matchersArr.length}: Migrating ${step}`;
@@ -161,7 +170,12 @@ export function run(path) {
       const noFilesFound = [];
       for (const matcher of matchers) {
         try {
-          await replaceInFile(matcher);
+          await replaceInFile({
+            ...matcher,
+            glob: {
+              windowsPathsNoEscape: isWindows,
+            },
+          });
         } catch (e) {
           if (e.message.includes('No files match the pattern')) {
             noFilesFound.push(e.message);
@@ -172,7 +186,7 @@ export function run(path) {
       }
       spinner.succeed(msg);
       noFilesFound.forEach((pattern) =>
-        console.log('\x1b[33m%s\x1b[0m', `⚠️ ${pattern}`)
+        console.log('\x1b[33m%s\x1b[0m', `⚠️ ${pattern}`),
       );
     }
   }
@@ -183,7 +197,7 @@ export function run(path) {
       console.log('\n              🌵 Done! 🌵');
       console.log('Welcome to a better translation experience 🌐');
       console.log(
-        '\nFor more information about this script please visit 👉 https://ngneat.github.io/transloco/docs/migration/ngx\n'
+        '\nFor more information about this script please visit 👉 https://jsverse.github.io/transloco/docs/migration/ngx\n',
       );
     });
 }

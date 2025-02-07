@@ -1,8 +1,11 @@
 {
-  "name": "@ngneat/transloco-optimize",
-  "version": "3.0.2",
+  "name": "@jsverse/transloco-optimize",
+  "version": "7.0.1",
   "description": "Transloco optimization process for production environments",
   "main": "src/lib/transloco-optimize.js",
+  "engines": {
+    "node": ">=16"
+  },
   "bin": {
     "transloco-optimize": "src/index.js"
   },
@@ -10,20 +13,13 @@
     "access": "public"
   },
   "bugs": {
-    "url": "https://github.com/ngneat/transloco/issues"
+    "url": "https://github.com/jsverse/transloco/issues"
   },
-  "homepage": "https://ngneat.github.io/transloco/docs/tools/optimize/",
+  "homepage": "https://jsverse.gitbook.io/transloco/tools/optimize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ngneat/transloco"
+    "url": "https://github.com/jsverse/transloco"
   },
-  "author": "Netanel Basal",
-  "contributors": [
-    {
-      "name": "Shahar Kazaz",
-      "url": "https://github.com/shaharkazaz"
-    }
-  ],
   "keywords": [
     "angular",
     "angular 2",
@@ -40,6 +36,6 @@
   "dependencies": {
     "flat": "^5.0.2",
     "command-line-args": "^5.2.0",
-    "glob": "^7.1.7"
+    "glob": "^10.0.0"
   }
 }

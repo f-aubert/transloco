@@ -6,10 +6,10 @@ import {
   Pipe,
   PipeTransform,
 } from '@angular/core';
+import { switchMap, forkJoin, Observable, Subscription } from 'rxjs';
+
 import { TranslocoService } from './transloco.service';
-import { HashMap, MaybeArray, Translation, TranslocoScope } from './types';
-import { switchMap } from 'rxjs/operators';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { HashMap, OrArray, Translation, TranslocoScope } from './types';
 import { TRANSLOCO_SCOPE } from './transloco-scope';
 import { TRANSLOCO_LANG } from './transloco-lang';
 import {
@@ -23,6 +23,7 @@ import { ScopeResolver } from './scope-resolver';
 @Pipe({
   name: 'transloco',
   pure: false,
+  standalone: true,
 })
 export class TranslocoPipe implements PipeTransform, OnDestroy {
   private subscription: Subscription | null = null;
@@ -30,25 +31,27 @@ export class TranslocoPipe implements PipeTransform, OnDestroy {
   private lastKey: string | undefined;
   private path: string | undefined;
   private langResolver = new LangResolver();
-  private scopeResolver = new ScopeResolver(this.translocoService);
+  private scopeResolver!: ScopeResolver;
 
   constructor(
-    private translocoService: TranslocoService,
+    private service: TranslocoService,
     @Optional()
     @Inject(TRANSLOCO_SCOPE)
-    private providerScope: MaybeArray<TranslocoScope> | undefined,
+    private providerScope: OrArray<TranslocoScope> | undefined,
     @Optional()
     @Inject(TRANSLOCO_LANG)
     private providerLang: string | undefined,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+  ) {
+    this.scopeResolver = new ScopeResolver(this.service);
+  }
 
-  // null is for handling strict mode + async pipe types https://github.com/ngneat/transloco/issues/311
-  // null is for handling strict mode + optional chaining types https://github.com/ngneat/transloco/issues/488
+  // null is for handling strict mode + async pipe types https://github.com/jsverse/transloco/issues/311
+  // null is for handling strict mode + optional chaining types https://github.com/jsverse/transloco/issues/488
   transform(
     key?: string | null,
     params?: HashMap,
-    inlineLang?: string
+    inlineLang?: string,
   ): string {
     if (!key) {
       return key as any;
@@ -64,11 +67,11 @@ export class TranslocoPipe implements PipeTransform, OnDestroy {
     this.subscription?.unsubscribe();
 
     const listenToLangChange = shouldListenToLangChanges(
-      this.translocoService,
-      this.providerLang || inlineLang
+      this.service,
+      this.providerLang || inlineLang,
     );
 
-    this.subscription = this.translocoService.langChanges$
+    this.subscription = this.service.langChanges$
       .pipe(
         switchMap((activeLang) => {
           const lang = this.langResolver.resolve({
@@ -79,13 +82,13 @@ export class TranslocoPipe implements PipeTransform, OnDestroy {
 
           return Array.isArray(this.providerScope)
             ? forkJoin(
-                (<TranslocoScope[]>this.providerScope).map((providerScope) =>
-                  this.resolveScope(lang, providerScope)
-                )
+                this.providerScope.map((providerScope) =>
+                  this.resolveScope(lang, providerScope),
+                ),
               )
             : this.resolveScope(lang, this.providerScope);
         }),
-        listenOrNotOperator(listenToLangChange)
+        listenOrNotOperator(listenToLangChange),
       )
       .subscribe(() => this.updateValue(key, params));
 
@@ -93,23 +96,21 @@ export class TranslocoPipe implements PipeTransform, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      // Caretaker note: it's important to clean up references to subscriptions since they save the `next`
-      // callback within its `destination` property, preventing classes from being GC'd.
-      this.subscription = null;
-    }
+    this.subscription?.unsubscribe();
+    // Caretaker note: it's important to clean up references to subscriptions since they save the `next`
+    // callback within its `destination` property, preventing classes from being GC'd.
+    this.subscription = null;
   }
 
   private updateValue(key: string, params?: HashMap | undefined) {
     const lang = this.langResolver.resolveLangBasedOnScope(this.path!);
-    this.lastValue = this.translocoService.translate(key, params, lang);
+    this.lastValue = this.service.translate(key, params, lang);
     this.cdr.markForCheck();
   }
 
   private resolveScope(
     lang: string,
-    providerScope: TranslocoScope
+    providerScope: TranslocoScope | null,
   ): Observable<Translation | Translation[]> {
     const resolvedScope = this.scopeResolver.resolve({
       inline: undefined,
@@ -117,6 +118,7 @@ export class TranslocoPipe implements PipeTransform, OnDestroy {
     });
     this.path = this.langResolver.resolveLangPath(lang, resolvedScope);
     const inlineLoader = resolveInlineLoader(providerScope, resolvedScope);
-    return this.translocoService._loadDependencies(this.path, inlineLoader);
+
+    return this.service._loadDependencies(this.path, inlineLoader);
   }
 }

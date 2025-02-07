@@ -1,7 +1,8 @@
 import { createComponentFactory, Spectator } from '@ngneat/spectator';
 import { Component } from '@angular/core';
-import { providersMock, runLoader } from '../mocks';
 import { fakeAsync } from '@angular/core/testing';
+
+import { providersMock, runLoader } from '../mocks';
 import { defaultConfig, TRANSLOCO_CONFIG } from '../../transloco.config';
 import { TranslocoModule } from '../../transloco.module';
 import { TranslocoService } from '../../transloco.service';
@@ -23,14 +24,14 @@ export const listenToLangChangesProvider = {
     <h1>{{ 'nested.title' | transloco }}</h1>
     <span>{{ 'alert' | transloco: { value: 'netanel' } }}</span>
     <h3>{{ 'alert' | transloco: { value: value } }}</h3>
-    <h5>{{ 'home' | transloco: null:'es' }}</h5>
+    <h5>{{ 'home' | transloco: null : 'es' }}</h5>
   `,
 })
 class TestPipe {
   value = 'hey';
 }
 
-describe('Pipe', () => {
+describe('Transloco Pipe', () => {
   describe('Pipe basic', () => {
     let spectator: Spectator<TestPipe>;
     const createComponent = createComponentFactory({
@@ -147,6 +148,7 @@ describe('Pipe', () => {
   });
 
   @Component({
+    selector: 'transloco-scope-pipe',
     template: `
       <p>{{ 'lazyPage.title' | transloco }}</p>
       <h1>{{ 'nested.title' | transloco }}</h1>

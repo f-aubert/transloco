@@ -1,10 +1,11 @@
 import { fakeAsync } from '@angular/core/testing';
-import { loadingTemplateMock, providersMock, runLoader } from '../mocks';
 import { createHostFactory, SpectatorHost } from '@ngneat/spectator';
-import { createFactory, preloadTranslations } from './shared';
-import { TranslocoLoaderComponent } from '../../loader-component.component';
+
+import { loadingTemplateMock, providersMock, runLoader } from '../mocks';
 import { TranslocoDirective } from '../../transloco.directive';
 import { TemplateHandler } from '../../template-handler';
+
+import { createFactory, preloadTranslations } from './shared';
 
 describe('Loading Template', () => {
   let spectator: SpectatorHost<TranslocoDirective>;
@@ -13,11 +14,11 @@ describe('Loading Template', () => {
   it('should attach and detach view with inline loader template', fakeAsync(() => {
     spyOn<TemplateHandler>(
       TemplateHandler.prototype,
-      'attachView'
+      'attachView',
     ).and.callThrough();
     spyOn<TemplateHandler>(
       TemplateHandler.prototype,
-      'detachView'
+      'detachView',
     ).and.callThrough();
     spectator = createHost(`
         <section *transloco="let t; scope: 'lazy-page'; loadingTpl: loading">
@@ -29,22 +30,18 @@ describe('Loading Template', () => {
         </ng-template>
       `);
 
-    expect((TemplateHandler.prototype as any).attachView).toHaveBeenCalledTimes(
-      1
-    );
+    expect(TemplateHandler.prototype.attachView).toHaveBeenCalledTimes(1);
     expect(spectator.queryHost('#lazy-page-loading')).toHaveText('Loading...');
     spectator.detectChanges();
     runLoader();
     expect(spectator.queryHost('#lazy-page-loading')).toBeNull();
-    expect((TemplateHandler.prototype as any).detachView).toHaveBeenCalledTimes(
-      1
-    );
+    expect(TemplateHandler.prototype.detachView).toHaveBeenCalledTimes(1);
   }));
 
   it('should not attachView if no inline loader template has provided', () => {
     spyOn<TemplateHandler>(
       TemplateHandler.prototype,
-      'attachView'
+      'attachView',
     ).and.callThrough();
     spectator = createHost(`
         <section *transloco="let t; scope: 'lazy-page';">
@@ -52,15 +49,13 @@ describe('Loading Template', () => {
         </section>
       `);
 
-    expect(
-      (TemplateHandler.prototype as any).attachView
-    ).not.toHaveBeenCalled();
+    expect(TemplateHandler.prototype.attachView).not.toHaveBeenCalled();
   });
 
   it('should not attachView if the translation have already loaded', fakeAsync(() => {
     spyOn<TemplateHandler>(
       TemplateHandler.prototype,
-      'attachView'
+      'attachView',
     ).and.callThrough();
     spectator = createHost(
       `
@@ -72,13 +67,11 @@ describe('Loading Template', () => {
           <h1 id="lazy-page-loading">Loading...</h1>
         </ng-template>
       `,
-      { detectChanges: false }
+      { detectChanges: false },
     );
     preloadTranslations(spectator);
 
-    expect(
-      (TemplateHandler.prototype as any).attachView
-    ).not.toHaveBeenCalled();
+    expect(TemplateHandler.prototype.attachView).not.toHaveBeenCalled();
   }));
 });
 
@@ -87,19 +80,17 @@ describe('Custom loading template', () => {
 
   const createHost = createHostFactory({
     component: TranslocoDirective,
-    declarations: [TranslocoLoaderComponent],
-    entryComponents: [TranslocoLoaderComponent],
     providers: [...providersMock, loadingTemplateMock],
   });
 
   it('should call attach view with provided template', fakeAsync(() => {
     spyOn<TemplateHandler>(
       TemplateHandler.prototype,
-      'attachView'
+      'attachView',
     ).and.callThrough();
     spyOn<TemplateHandler>(
       TemplateHandler.prototype,
-      'detachView'
+      'detachView',
     ).and.callThrough();
 
     spectator = createHost(`
@@ -108,14 +99,14 @@ describe('Custom loading template', () => {
         </section>
       `);
 
-    expect((TemplateHandler.prototype as any).attachView).toHaveBeenCalled();
+    expect(TemplateHandler.prototype.attachView).toHaveBeenCalled();
     expect(spectator.queryHost('.transloco-loader-template')).toHaveText(
-      'loading template...'
+      'loading template...',
     );
     spectator.detectChanges();
     runLoader();
     expect(spectator.queryHost('.transloco-loader-template')).toBeNull();
-    expect((TemplateHandler.prototype as any).detachView).toHaveBeenCalled();
+    expect(TemplateHandler.prototype.detachView).toHaveBeenCalled();
   }));
 
   it('should use the inline loader template instead of default', fakeAsync(() => {

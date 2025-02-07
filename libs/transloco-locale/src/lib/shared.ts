@@ -1,17 +1,21 @@
-import { Locale } from './transloco-locale.types';
-import { LocaleFormatOptions, LocaleConfig } from './transloco-locale.types';
+import {
+  Locale,
+  LocaleFormatOptions,
+  LocaleConfig,
+} from './transloco-locale.types';
 
-export function getDefaultOptions(
+export function getDefaultOptions<T extends keyof LocaleFormatOptions>(
   locale: Locale,
-  type: keyof LocaleFormatOptions,
-  localeConfig: LocaleConfig
-): any {
-  const defaultConfig = localeConfig.global ? localeConfig.global[type] : {};
-  const settings = localeConfig.localeBased
-    ? localeConfig.localeBased[locale]
-    : {};
+  style: T,
+  localeConfig: LocaleConfig,
+) {
+  const defaultConfig = (localeConfig.global?.[style] ?? {}) as NonNullable<
+    LocaleFormatOptions[T]
+  >;
+  const settings = (localeConfig.localeBased?.[locale] ??
+    {}) as LocaleFormatOptions;
 
-  return settings?.[type]
-    ? { ...defaultConfig, ...settings[type] }
+  return Reflect.has(settings, style)
+    ? { ...defaultConfig, ...settings[style] }
     : defaultConfig;
 }

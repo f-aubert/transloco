@@ -1,54 +1,47 @@
+> [!IMPORTANT]  
+> The Transloco packages are now published under the **@jsverse** scope, update your dependencies to get the latest features 🚀
+
 <br />
 <p align="center">
  <img width="50%" height="50%" src="./logo.svg">
 </p>
 
-> The internationalization (i18n) library for Angular
+<p align="center">
+  The internationalization (i18n) library for Angular
+</p>
 
-Transloco allows you to define translations for your content in different languages and switch between them easily in runtime.
-It exposes a rich API to manage translations efficiently and cleanly. It provides multiple plugins that will improve your development experience. Here is a small taste of the features it offers:
+<h3></h3>
+
+![npm](https://img.shields.io/npm/v/@jsverse/transloco)
+![Bundle Size](https://img.shields.io/bundlephobia/min/@jsverse/transloco)
+![Downloads](https://img.shields.io/npm/dm/@jsverse/transloco)
+[![Build Status](https://github.com/jsverse/transloco/actions/workflows/ci.yml/badge.svg)]()
+[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/jsverse/transloco/blob/master/CONTRIBUTING.md)
+
+Transloco enables you to define translations for your content in multiple languages and seamlessly switch between them at runtime. With its robust API, managing translations becomes efficient and maintainable. Additionally, Transloco offers an array of plugins designed to enhance your development experience. Here's a quick look at its powerful features:
 
 ✅ &nbsp;Clean and DRY templates  
-✅ &nbsp;Support for Lazy Load  
-✅ &nbsp;Support for Multiple Languages Simultaneously  
-✅ &nbsp;Support for Multiple Fallbacks  
-✅ &nbsp;Support for Testing  
-✅ &nbsp;Support for SSR  
-✅ &nbsp;Support for L10N  
-✅ &nbsp;Rich Plugins  
-✅ &nbsp;Hackable  
-✅ &nbsp;Schematics
+✅ &nbsp;Lazy Loading support  
+✅ &nbsp;Handle multiple languages simultaneously  
+✅ &nbsp;Flexible fallbacks for missing translations  
+✅ &nbsp;Comprehensive testing support  
+✅ &nbsp;Server-Side Rendering (SSR) compatibility  
+✅ &nbsp;Localization (L10N) support  
+✅ &nbsp;A variety of rich plugins  
+✅ &nbsp;Highly customizable and hackable  
+✅ &nbsp;Schematics  
+✅ &nbsp;Fully supports standalone components
+
+Transloco is your all-in-one solution for internationalizing Angular applications with ease and flexibility.
 
 <hr />
 
-[![Build Status](https://travis-ci.org/ngneat/transloco.svg?branch=master)](https://travis-ci.org/ngneat/transloco)
-[![All Contributors](https://img.shields.io/badge/all_contributors-33-orange.svg?style=flat-square)](#contributors-)
-[![commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)]()
-[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)]()
-[![coc-badge](https://img.shields.io/badge/codeof-conduct-ff69b4.svg?style=flat-square)]()
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e5079.svg?style=flat-square)](https://github.com/semantic-release/semantic-release)
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![spectator](https://img.shields.io/badge/tested%20with-spectator-2196F3.svg?style=flat-square)](https://github.com/ngneat/spectator)
-[![Join the chat at https://gitter.im/ngneat-transloco](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/ngneat-transloco/lobby?source=orgpage)
-
-- 🤓 &nbsp;Learn about it on the [docs site](https://ngneat.github.io/transloco/)
-- 🎥 &nbsp;Watch our instructional [video guides](https://www.youtube.com/watch?v=MYkYcafJdGw&list=PLTuTW7EgL6ouXk5BqE4zWdDJkAuC4HTWi)
-- 🚀 &nbsp;See it in action on [CodeSandbox](https://codesandbox.io/s/ngneat-transloco-kn52hs)
-- 😎 &nbsp;Use [schematics](https://ngneat.github.io/transloco/docs/schematics)
-- 👉 &nbsp;Checkout the [sample application](https://ngneat.github.io/transloco/sampleApp)
-- 📖 &nbsp;Read the blog [posts](https://ngneat.github.io/transloco/docs/blog-posts)
-- 🍄 &nbsp;Join Transloco's [Gitter](https://gitter.im/ngneat-transloco/lobby?source=orgpage) room
-- ❓ &nbsp;Find answers in our [FAQ](https://ngneat.github.io/transloco/docs/faq) section
-
-## Core Team
-
-<table>
-  <tr>
-    <td align="center"><a href="https://www.netbasal.com"><img src="https://avatars1.githubusercontent.com/u/6745730?v=4" width="100px;" alt="Netanel Basal"/><br /><sub><b>Netanel Basal</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/shaharkazaz"><img src="https://avatars2.githubusercontent.com/u/17194830?v=4" width="100px;" alt="Shahar Kazaz"/><br /><sub><b>Shahar Kazaz</b></sub></a><br /></td>
-    </tr>
-</table>
+- 🤓 &nbsp;Explore the (brand new ✨) [documentation](https://jsverse.gitbook.io/transloco) to learn more.
+- 🚀 &nbsp;Check out the [Sandbox & Examples](https://jsverse.gitbook.io/transloco) to see Transloco in action.
+- 😎 &nbsp;Leverage [Schematics](https://jsverse.gitbook.io/transloco/schematics) for streamlined setup and configuration.
+- 📖 &nbsp;Dive into insightful [blog posts](https://jsverse.gitbook.io/transloco/blog-posts).
+- ❓ &nbsp;Find answers to common questions in our [FAQs](https://jsverse.gitbook.io/transloco/faqs).
 
 ## Contributors ✨
 
-Thank goes to all these wonderful [people who contributed](https://github.com/ngneat/transloco/graphs/contributors) ❤️
+Thank goes to all these wonderful [people who contributed](https://github.com/jsverse/transloco/graphs/contributors) ❤️

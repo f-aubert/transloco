@@ -21,10 +21,6 @@ export interface LangChangedEvent {
 
 export type TranslocoEvents = LoadedEvent | FailedEvent | LangChangedEvent;
 export type Translation = HashMap;
-export type PersistStorage = Pick<
-  Storage,
-  'getItem' | 'setItem' | 'removeItem'
->;
 export type TranslateParams = string | string[];
 export type TranslateObjectParams =
   | TranslateParams
@@ -36,6 +32,7 @@ export interface LangDefinition {
 }
 export type AvailableLangs = string[] | LangDefinition[];
 export interface SetTranslationOptions {
+  lang?: string;
   merge?: boolean;
   emitChange?: boolean;
 }
@@ -44,7 +41,7 @@ export interface ProviderScope {
   loader?: InlineLoader;
   alias?: string;
 }
-export type MaybeArray<T> = T | T[];
+export type OrArray<T> = T | T[];
 export type TranslocoScope = ProviderScope | string | undefined;
 export type InlineLoader = HashMap<() => Promise<Translation>>;
 export interface LoadOptions {
@@ -52,4 +49,12 @@ export interface LoadOptions {
   /** @internal */
   failedCounter?: number;
   inlineLoader?: InlineLoader;
+}
+
+/** @internal */
+declare global {
+  // Indicates whether the application is operating in development mode.
+  // `ngDevMode` is a global flag set by Angular CLI.
+  // https://github.com/angular/angular-cli/blob/9b883fe28862c96720c7899b431174e9b47ad7e4/packages/angular/build/src/tools/esbuild/application-code-bundle.ts#L604
+  const ngDevMode: boolean;
 }

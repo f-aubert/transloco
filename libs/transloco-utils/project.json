@@ -1,12 +1,14 @@
 {
+  "name": "transloco-utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/transloco-utils/src",
   "projectType": "library",
+  "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "updateBuildableProjectDepsInPackageJson": false,
         "outputPath": "dist/libs/transloco-utils",
         "main": "libs/transloco-utils/src/index.ts",
         "tsConfig": "libs/transloco-utils/tsconfig.lib.json",
@@ -14,10 +16,7 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "options": {
-        "lintFilePatterns": ["libs/transloco-utils/**/*.ts"]
-      },
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
     },
     "test": {
@@ -27,10 +26,6 @@
         "tsConfig": "libs/transloco-utils/tsconfig.spec.json",
         "karmaConfig": "libs/transloco-utils/karma.conf.js"
       }
-    },
-    "version": {
-      "executor": "@jscutlery/semver:version"
     }
-  },
-  "tags": []
+  }
 }

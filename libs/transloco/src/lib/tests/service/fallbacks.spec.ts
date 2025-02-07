@@ -1,23 +1,17 @@
-import { of, timer } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { mockLangs, runLoader } from '../mocks';
+import { catchError, map, of, timer } from 'rxjs';
 import { fakeAsync } from '@angular/core/testing';
-import { DefaultHandler } from '../../transloco-missing-handler';
-import { DefaultInterceptor } from '../../transloco.interceptor';
+import { Type } from '@angular/core';
+
+import { createService, mockLangs, runLoader } from '../mocks';
 import { TranslocoLoader } from '../../transloco.loader';
-import { TranslocoService } from '../../transloco.service';
-import { DefaultTranspiler } from '../../transloco.transpiler';
-import {
-  DefaultFallbackStrategy,
-  TranslocoFallbackStrategy,
-} from '../../transloco-fallback-strategy';
+import { TranslocoFallbackStrategy } from '../../transloco-fallback-strategy';
 
 describe('Multiple fallbacks', () => {
   describe('DefaultFallbackStrategy', () => {
-    let loader: TranslocoLoader;
+    let loader: Type<TranslocoLoader>;
 
     beforeEach(() => {
-      loader = {
+      loader = class TestLoader implements TranslocoLoader {
         getTranslation(lang: string) {
           return timer(1000).pipe(
             map(() => mockLangs[lang]),
@@ -29,24 +23,19 @@ describe('Multiple fallbacks', () => {
               }
 
               return translation;
-            })
+            }),
           );
-        },
+        }
       };
     });
 
     it('should try load the fallbackLang when current lang failed', fakeAsync(() => {
-      const service = new TranslocoService(
-        loader,
-        new DefaultTranspiler(),
-        new DefaultHandler(),
-        new DefaultInterceptor(),
-        { defaultLang: 'en' },
-        new DefaultFallbackStrategy({
+      const service = createService(
+        {
           fallbackLang: 'es',
-          defaultLang: 'en',
           failedRetries: 2,
-        })
+        },
+        { loader },
       );
 
       spyOn(service, 'load').and.callThrough();
@@ -73,17 +62,12 @@ describe('Multiple fallbacks', () => {
     }));
 
     it('should load the fallbackLang only once', fakeAsync(() => {
-      const service = new TranslocoService(
-        loader,
-        new DefaultTranspiler(),
-        new DefaultHandler(),
-        new DefaultInterceptor(),
-        { defaultLang: 'en' },
-        new DefaultFallbackStrategy({
+      const service = createService(
+        {
           fallbackLang: 'es',
-          defaultLang: 'en',
           failedRetries: 2,
-        })
+        },
+        { loader },
       );
 
       spyOn(service, 'load').and.callThrough();
@@ -119,28 +103,24 @@ describe('Multiple fallbacks', () => {
     }));
 
     it('should should throw if the fallback lang is failed to load', fakeAsync(() => {
-      const service = new TranslocoService(
-        loader,
-        new DefaultTranspiler(),
-        new DefaultHandler(),
-        new DefaultInterceptor(),
-        { defaultLang: 'en' },
-        new DefaultFallbackStrategy({
+      const service = createService(
+        {
           fallbackLang: 'fallbackNotExists',
-          defaultLang: 'en',
           failedRetries: 2,
-        })
+        },
+        { loader },
       );
+
       spyOn(service, 'load').and.callThrough();
       service
         .load('notExists')
         .pipe(
           catchError((e) => {
             expect(e.message).toEqual(
-              'Unable to load translation and all the fallback languages'
+              'Unable to load translation and all the fallback languages',
             );
             return of('');
-          })
+          }),
         )
         .subscribe();
 
@@ -163,10 +143,10 @@ describe('Multiple fallbacks', () => {
       }
     }
 
-    let loader: TranslocoLoader;
+    let loader: Type<TranslocoLoader>;
 
     beforeEach(() => {
-      loader = {
+      loader = class TestLoader implements TranslocoLoader {
         getTranslation(lang: string) {
           return timer(1000).pipe(
             map(() => mockLangs[lang]),
@@ -176,20 +156,18 @@ describe('Multiple fallbacks', () => {
               }
 
               return translation;
-            })
+            }),
           );
-        },
+        }
       };
     });
 
     it('should try load the it and gp then set en as the active', fakeAsync(() => {
-      const service = new TranslocoService(
-        loader,
-        new DefaultTranspiler(),
-        new DefaultHandler(),
-        new DefaultInterceptor(),
-        { defaultLang: 'es' },
-        new StrategyTest()
+      const service = createService(
+        {
+          defaultLang: 'es',
+        },
+        { loader, fallback: StrategyTest },
       );
 
       spyOn(service, 'load').and.callThrough();

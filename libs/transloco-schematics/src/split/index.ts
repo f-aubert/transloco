@@ -1,4 +1,5 @@
 import { Rule, Tree } from '@angular-devkit/schematics';
+
 import { TranslationFileFormat } from '../types';
 import {
   getTranslationEntryPaths,
@@ -9,19 +10,40 @@ import {
   hasSubdirs,
   setFileContent,
 } from '../utils/transloco';
+
 import { SchemaOptions } from './schema';
 
-type Parser = (content: string) => any;
+type Parser = (content: string) => unknown;
 
 function reduceTranslations(
   host: Tree,
   dirPath: string,
   translationJson,
   lang: string,
-  key = ''
+  key = '',
 ) {
   const dir = host.getDir(dirPath);
   if (!hasFiles(dir)) return translationJson;
+
+  if (hasSubdirs(dir)) {
+    dir.subdirs.forEach((subDirName) => {
+      const subDir = dir.dir(subDirName);
+      const nestedKeyPath = getTranslationKey(key, subDirName);
+      const nestedKey = nestedKeyPath.split('.').at(-1);
+      const subTranslationJson = translationJson[key];
+      if (subTranslationJson) {
+        reduceTranslations(
+          host,
+          subDir.path,
+          subTranslationJson,
+          lang,
+          nestedKey,
+        );
+        delete translationJson[key][nestedKey];
+      }
+    });
+  }
+
   dir.subfiles
     .filter((fileName) => fileName.includes(`${lang}.json`))
     .forEach((fileName) => {
@@ -29,16 +51,9 @@ function reduceTranslations(
         return translationJson;
       }
       setFileContent(host, dir.path, fileName, translationJson[key]);
-      delete translationJson[key];
     });
-  if (hasSubdirs(dir)) {
-    dir.subdirs.forEach((subDirName) => {
-      const subDir = dir.dir(subDirName);
-      const nestedKey = getTranslationKey(key, subDirName);
-      reduceTranslations(host, subDir.path, translationJson, lang, nestedKey);
-    });
-  }
 
+  delete translationJson[key];
   return translationJson;
 }
 
@@ -71,7 +86,7 @@ export default function (options: SchemaOptions): Rule {
         (acc, { scope, path }) => {
           return reduceTranslations(host, path, translation, lang, scope);
         },
-        translation
+        translation,
       );
     }
 

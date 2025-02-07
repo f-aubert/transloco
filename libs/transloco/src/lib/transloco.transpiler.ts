@@ -1,10 +1,5 @@
-import {
-  Inject,
-  Injectable,
-  InjectionToken,
-  Injector,
-  Optional,
-} from '@angular/core';
+import { inject, Injectable, InjectionToken, Injector } from '@angular/core';
+
 import { HashMap, Translation } from './types';
 import { getValue, isDefined, isObject, isString, setValue } from './helpers';
 import {
@@ -13,42 +8,71 @@ import {
   TranslocoConfig,
 } from './transloco.config';
 
-export const TRANSLOCO_TRANSPILER = new InjectionToken('TRANSLOCO_TRANSPILER');
+export const TRANSLOCO_TRANSPILER = new InjectionToken<TranslocoTranspiler>(
+  typeof ngDevMode !== 'undefined' && ngDevMode ? 'TRANSLOCO_TRANSPILER' : '',
+);
 
 export interface TranslocoTranspiler {
-  // TODO: Change parameters to object in the next major release
-  transpile(value: any, params: HashMap, translation: Translation, key: string): any;
+  transpile(params: TranspileParams): any;
 
   onLangChanged?(lang: string): void;
 }
 
+export interface TranspileParams<V = unknown> {
+  value: V;
+  params?: HashMap;
+  translation: Translation;
+  key: string;
+}
+
 @Injectable()
 export class DefaultTranspiler implements TranslocoTranspiler {
-  protected interpolationMatcher: RegExp;
+  protected config =
+    inject(TRANSLOCO_CONFIG, { optional: true }) ?? defaultConfig;
 
-  constructor(
-    @Optional() @Inject(TRANSLOCO_CONFIG) userConfig?: TranslocoConfig
-  ) {
-    this.interpolationMatcher = resolveMatcher(userConfig);
+  protected get interpolationMatcher() {
+    return resolveMatcher(this.config);
   }
 
-  transpile(value: any, params: HashMap = {}, translation: Translation, key: string): any {
+  transpile({ value, params = {}, translation, key }: TranspileParams): any {
     if (isString(value)) {
-      return value.replace(this.interpolationMatcher, (_, match) => {
-        match = match.trim();
-        if (isDefined(params[match])) {
-          return params[match];
-        }
+      let paramMatch: RegExpExecArray | null;
+      let parsedValue = value;
 
-        return isDefined(translation[match])
-          ? this.transpile(translation[match], params, translation, key)
-          : '';
-      });
+      while (
+        (paramMatch = this.interpolationMatcher.exec(parsedValue)) !== null
+      ) {
+        const [match, paramValue] = paramMatch;
+        parsedValue = parsedValue.replace(match, () => {
+          const match = paramValue.trim();
+
+          const param = getValue(params, match);
+          if (isDefined(param)) {
+            return param;
+          }
+
+          return isDefined(translation[match])
+            ? this.transpile({
+                params,
+                translation,
+                key,
+                value: translation[match],
+              })
+            : '';
+        });
+      }
+
+      return parsedValue;
     } else if (params) {
       if (isObject(value)) {
-        value = this.handleObject(value, params, translation, key);
+        value = this.handleObject({
+          value,
+          params,
+          translation,
+          key,
+        });
       } else if (Array.isArray(value)) {
-        value = this.handleArray(value, params, translation, key);
+        value = this.handleArray({ value, params, translation, key });
       }
     }
 
@@ -79,22 +103,24 @@ export class DefaultTranspiler implements TranslocoTranspiler {
    *
    *
    */
-  protected handleObject(
-    value: any,
-    params: HashMap = {},
-    translation: Translation,
-    key: string
-  ) {
+  protected handleObject({
+    value,
+    params = {},
+    translation,
+    key,
+  }: TranspileParams<Record<any, any>>) {
     let result = value;
 
     Object.keys(params).forEach((p) => {
-      // get the value of "b.c" inside "a" => "Hello {{ value }}"
-      const v = getValue(result, p);
-      // get the params of "b.c" => { value: "Transloco" }
-      const getParams = getValue(params, p);
-
       // transpile the value => "Hello Transloco"
-      const transpiled = this.transpile(v, getParams, translation, key);
+      const transpiled = this.transpile({
+        // get the value of "b.c" inside "a" => "Hello {{ value }}"
+        value: getValue(result, p),
+        // get the params of "b.c" => { value: "Transloco" }
+        params: getValue(params, p),
+        translation,
+        key,
+      });
 
       // set "b.c" to `transpiled`
       result = setValue(result, p, transpiled);
@@ -103,23 +129,20 @@ export class DefaultTranspiler implements TranslocoTranspiler {
     return result;
   }
 
-  protected handleArray(
-    value: string[],
-    params: HashMap = {},
-    translation: Translation,
-    key: string
-  ) {
-    return value.map((v) => this.transpile(v, params, translation, key));
+  protected handleArray({ value, ...rest }: TranspileParams<unknown[]>) {
+    return value.map((v) =>
+      this.transpile({
+        value: v,
+        ...rest,
+      }),
+    );
   }
 }
 
-function resolveMatcher(userConfig?: TranslocoConfig): RegExp {
-  const [start, end] =
-    userConfig && userConfig.interpolation
-      ? userConfig.interpolation
-      : defaultConfig.interpolation!;
+function resolveMatcher(config: TranslocoConfig): RegExp {
+  const [start, end] = config.interpolation;
 
-  return new RegExp(`${start}(.*?)${end}`, 'g');
+  return new RegExp(`${start}([^${start}${end}]*?)${end}`, 'g');
 }
 
 export interface TranslocoTranspilerFunction {
@@ -146,33 +169,31 @@ export class FunctionalTranspiler
   extends DefaultTranspiler
   implements TranslocoTranspiler
 {
-  constructor(private injector: Injector) {
-    super();
-  }
+  protected injector = inject(Injector);
 
-  transpile(value: any, params: HashMap = {}, translation: Translation, key: string): any {
+  transpile({ value, ...rest }: TranspileParams) {
     let transpiled = value;
     if (isString(value)) {
       transpiled = value.replace(
-        /\[\[\s*(\w+)\((.*)\)\s*]]/g,
+        /\[\[\s*(\w+)\((.*?)\)\s*]]/g,
         (match: string, functionName: string, args: string) => {
           try {
             const func: TranslocoTranspilerFunction =
               this.injector.get(functionName);
 
             return func.transpile(...getFunctionArgs(args));
-          } catch (e: any) {
+          } catch (e: unknown) {
             let message = `There is an error in: '${value}'. 
                           Check that the you used the right syntax in your translation and that the implementation of ${functionName} is correct.`;
-            if (e.message.includes('NullInjectorError')) {
+            if ((e as Error).message.includes('NullInjectorError')) {
               message = `You are using the '${functionName}' function in your translation but no provider was found!`;
             }
             throw new Error(message);
           }
-        }
+        },
       );
     }
 
-    return super.transpile(transpiled, params, translation, key);
+    return super.transpile({ value: transpiled, ...rest });
   }
 }

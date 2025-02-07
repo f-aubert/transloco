@@ -1,4 +1,5 @@
 import { Schema } from '@schematics/angular/module/schema';
+
 import { TranslationFileFormat } from '../types';
 
 export interface SchemaOptions extends Schema {
@@ -25,5 +26,5 @@ export interface SchemaOptions extends Schema {
   /**
    * The root project name.
    */
-  project?: string;
+  project: string;
 }
