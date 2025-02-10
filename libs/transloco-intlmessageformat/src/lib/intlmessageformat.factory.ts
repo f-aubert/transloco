@@ -1,5 +1,4 @@
 import { MFLocale } from './intlmessageformat.config';
-
 import IntlMessageFormat from 'intl-messageformat';
 import { Formats, PrimitiveType } from 'intl-messageformat/src/formatters';
 import { Options } from 'intl-messageformat/src/core';
@@ -24,17 +23,16 @@ export function cachedFactory(
     formats?: Partial<Formats>,
     opts?: Options
 ): MFFactoryFn {
-    return (message: string | MessageFormatElement[], values?: Record<string, PrimitiveType>) => {
-        const localeKey = `__${locales?.toString() || IntlMessageFormat.defaultLocale}__`;
+    return (message: string | MessageFormatElement[], params?: Record<string, PrimitiveType>) => {
+      const localeKey = `__${locales?.toString() || IntlMessageFormat.defaultLocale}__`;
+      const cacheKey = `${localeKey}${message}${params ? JSON.stringify(params) : ""}`;
+      const cachedMsg = cache.get(cacheKey);
 
-        const cacheKey = `${localeKey}${values}`;
-        const cachedMsg = cache.get(cacheKey);
+      if (cachedMsg) {
+        return cachedMsg;
+      }
 
-        if (cachedMsg) {
-            return cachedMsg;
-        }
-
-        const msg = defaultFactory(locales, formats, opts)(message, values);
+        const msg = defaultFactory(locales, formats, opts)(message, params);
         cache.set(cacheKey, msg);
 
         return msg;
