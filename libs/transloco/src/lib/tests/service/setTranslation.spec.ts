@@ -1,8 +1,10 @@
+import { fakeAsync } from '@angular/core/testing';
+
 import { flatten } from '../../helpers';
 import { Translation } from '../../types';
 import { TranslocoService } from '../../transloco.service';
 import { createService, mockLangs } from '../mocks';
-import { fakeAsync } from '@angular/core/testing';
+
 import { loadLang } from './utils';
 
 describe('setTranslation', () => {
@@ -13,14 +15,14 @@ describe('setTranslation', () => {
     service = createService();
     setTranslationsSpy = spyOn(
       (service as any).translations,
-      'set'
+      'set',
     ).and.callThrough();
   });
 
   it('should add translation to the map after passing through the interceptor', () => {
     const interceptorSpy = spyOn(
       (service as any).interceptor,
-      'preSaveTranslation'
+      'preSaveTranslation',
     ).and.callThrough();
     const lang = 'en';
     const translation = flatten(mockLangs[lang]);
@@ -82,7 +84,7 @@ describe('setTranslation', () => {
     });
 
     it("should map the scope's name in the merged translation", () => {
-      (service as any).mergedConfig.scopeMapping = { 'lazy-page': 'kazaz' };
+      service.config.scopeMapping = { 'lazy-page': 'kazaz' };
       service.setTranslation(translation, lang);
       const merged = {
         ...flatten(mockLangs.en),
@@ -97,6 +99,17 @@ describe('setTranslation', () => {
       const merged = {
         ...flatten(mockLangs.en),
         ...flatten({ myScopeAlias: { ...translation } }),
+      };
+      expect(setTranslationsSpy).toHaveBeenCalledWith('en', merged);
+    });
+
+    it("should not change scope's name given scope.keepCasing is set to true", () => {
+      service.config.scopes.keepCasing = true;
+      lang = 'LAZY-page/en';
+      service.setTranslation(translation, lang);
+      const merged = {
+        ...flatten(mockLangs.en),
+        ...flatten({ 'LAZY-page': { ...translation } }),
       };
       expect(setTranslationsSpy).toHaveBeenCalledWith('en', merged);
     });

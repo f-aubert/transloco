@@ -1,12 +1,19 @@
 {
   "root": true,
   "ignorePatterns": ["**/*"],
-  "plugins": ["@nrwl/nx"],
+  "plugins": ["@nx"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": ["libs/*/tsconfig.json", "tsconfig.base.json"]
+      }
+    }
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
-        "@nrwl/nx/enforce-module-boundaries": [
+        "@nx/enforce-module-boundaries": [
           "error",
           {
             "enforceBuildableLibDependency": true,
@@ -23,17 +30,33 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": ["plugin:@nrwl/nx/typescript"],
-      "rules": {}
+      "extends": [
+        "plugin:@nx/typescript",
+        "plugin:import/recommended",
+        "plugin:import/typescript"
+      ],
+      "rules": {
+        "import/order": [
+          "error",
+          {
+            "groups": ["builtin", "external", "internal", "parent", "sibling"],
+            "newlines-between": "always"
+          }
+        ],
+        "@typescript-eslint/no-extra-semi": "error",
+        "no-extra-semi": "off"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],
-      "extends": ["plugin:@nrwl/nx/javascript"],
-      "rules": {}
+      "extends": ["plugin:@nx/javascript"],
+      "rules": {
+        "@typescript-eslint/no-extra-semi": "error",
+        "no-extra-semi": "off"
+      }
     },
-    // Disalble rules for sepcs
     {
-      "files": ["**/*.spec.ts","**/mocks.ts","**/test-setup.ts"],
+      "files": ["**/*.spec.ts", "**/mocks.ts", "**/test-setup.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off",
         "@angular-eslint/component-class-suffix": "off",
@@ -41,7 +64,6 @@
         "@typescript-eslint/no-non-null-assertion": "off"
       }
     },
-    // Allow usage of any in types file and utility files
     {
       "files": ["**/types.ts", "**/helpers.ts"],
       "rules": {

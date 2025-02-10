@@ -1,22 +1,25 @@
-import { Rule, SchematicsException, Tree } from '@angular-devkit/schematics';
-import { getConfiguredPackageManager } from '@angular/cli/utilities/config';
-import { TranslocoGlobalConfig } from '@ngneat/transloco-utils';
 import { execSync } from 'child_process';
+
+import { Rule, SchematicsException, Tree } from '@angular-devkit/schematics';
+import { getConfiguredPackageManager } from '@angular/cli/src/utilities/config';
+import { TranslocoGlobalConfig } from '@jsverse/transloco-utils';
+import { from, map } from 'rxjs';
+
 import { addScriptToPackageJson } from '../utils/package';
 import { getWorkspace, setWorkspace } from '../utils/projects';
 import { updateConfig } from '../utils/transloco';
-import { SchemaOptions } from './schema';
-import { from, map } from 'rxjs';
 import { getConfig } from '../utils/config';
+
+import { SchemaOptions } from './schema';
 
 async function installKeysManager() {
   const packageManager = await getConfiguredPackageManager();
   console.log('Installing packages for tooling...');
   if (packageManager === 'yarn') {
-    execSync('yarn add --dev @ngneat/transloco-keys-manager ngx-build-plus');
+    execSync('yarn add --dev @jsverse/transloco-keys-manager ngx-build-plus');
   } else {
     execSync(
-      'npm install --save-dev @ngneat/transloco-keys-manager ngx-build-plus'
+      'npm install --save-dev @jsverse/transloco-keys-manager ngx-build-plus',
     );
   }
 }
@@ -24,8 +27,7 @@ async function installKeysManager() {
 export function updateAngularJson(host: Tree, options) {
   const angularJson = getWorkspace(host);
   if (angularJson) {
-    const project =
-      angularJson.projects[options.project || angularJson.defaultProject];
+    const project = angularJson.projects[options.project];
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - This is a custom builder type added after installing ngx-build-plus
     project.architect.serve.builder = 'ngx-build-plus:dev-server';
@@ -35,7 +37,7 @@ export function updateAngularJson(host: Tree, options) {
 }
 
 export function createWebpackConfig(host: Tree) {
-  const webpackConfig = `const { TranslocoExtractKeysWebpackPlugin } = require('@ngneat/transloco-keys-manager');
+  const webpackConfig = `const { TranslocoExtractKeysWebpackPlugin } = require('@jsverse/transloco-keys-manager');
  
 module.exports = {
   plugins: [new TranslocoExtractKeysWebpackPlugin()]
@@ -49,12 +51,12 @@ function addKeysDetectiveScript(host: Tree, strategy: string) {
     addScriptToPackageJson(
       host,
       'start',
-      'ng serve --extra-webpack-config webpack-dev.config.js'
+      'ng serve --extra-webpack-config webpack-dev.config.js',
     );
     addScriptToPackageJson(
       host,
       'i18n:extract',
-      'transloco-keys-manager extract'
+      'transloco-keys-manager extract',
     );
   }
 
@@ -62,7 +64,7 @@ function addKeysDetectiveScript(host: Tree, strategy: string) {
     addScriptToPackageJson(
       host,
       'i18n:extract',
-      'transloco-keys-manager extract'
+      'transloco-keys-manager extract',
     );
   }
 
@@ -70,7 +72,7 @@ function addKeysDetectiveScript(host: Tree, strategy: string) {
     addScriptToPackageJson(
       host,
       'start',
-      'ng serve --extra-webpack-config webpack-dev.config.js'
+      'ng serve --extra-webpack-config webpack-dev.config.js',
     );
   }
 
@@ -83,7 +85,7 @@ function updateTranslocoConfig(host, options) {
   if (!config.rootTranslationsPath) {
     if (!options.translationPath) {
       throw new SchematicsException(
-        'Please provide the translation root path by using the --translation-path flag'
+        'Please provide the translation root path by using the --translation-path flag',
       );
     }
     config.rootTranslationsPath = options.translationPath;
@@ -92,7 +94,7 @@ function updateTranslocoConfig(host, options) {
   if (!config.langs) {
     if (!options.langs) {
       throw new SchematicsException(
-        'Please provide the available languages either by using --langs or through the "langs" property in transloco.config.js file'
+        'Please provide the available languages either by using --langs or through the "langs" property in transloco.config.ts file',
       );
     }
 
@@ -125,7 +127,7 @@ export default function (options: SchemaOptions): Rule {
         addKeysDetectiveScript(host, options.strategy);
 
         return host;
-      })
+      }),
     );
   };
 }

@@ -28,7 +28,7 @@ export function setWorkspace(host: Tree, workspace): void {
 export function getProject(host: Tree, project?: string) {
   const workspace = getWorkspace(host);
   if (workspace) {
-    return workspace.projects[project || workspace.defaultProject];
+    return workspace.projects[project];
   }
 
   throw new SchematicsException('could not find a workspace project');
@@ -37,7 +37,7 @@ export function getProject(host: Tree, project?: string) {
 export function setEnvironments(
   host: Tree,
   sourceRoot: string,
-  transformer: (env: string) => string
+  transformer: (env: string) => string,
 ) {
   const path = sourceRoot + '/environments';
   const environments = host.getDir(path);
@@ -47,11 +47,6 @@ export function setEnvironments(
     const source = configBuffer.toString('utf-8');
     host.overwrite(filePath, transformer(source));
   });
-}
-
-export interface WorkspaceProject {
-  root: string;
-  projectType: string;
 }
 
 export function getProjectPath(host: Tree, project, options) {
@@ -67,13 +62,4 @@ export function getProjectPath(host: Tree, project, options) {
   }
 
   return options.path;
-}
-
-export function isLib(
-  host: Tree,
-  options: { project?: string | undefined; path?: string | undefined }
-) {
-  const project = getProject(host, options.project);
-
-  return project.projectType === 'library';
 }

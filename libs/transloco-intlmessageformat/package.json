@@ -1,6 +1,6 @@
 {
   "name": "@ngneat/transloco-intlmessageformat",
-  "version": "4.3.0",
+  "version": "7.0.1",
   "description": "Transpiler for Transloco that uses formatjs/intlmessageformat to compile translations using ICU syntax for handling pluralization and gender",
   "publishConfig": {
     "access": "public"

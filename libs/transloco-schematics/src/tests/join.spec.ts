@@ -1,15 +1,19 @@
+import * as path from 'node:path';
+
 import {
   SchematicTestRunner,
   UnitTestTree,
 } from '@angular-devkit/schematics/testing';
-import { TranslocoGlobalConfig } from '@ngneat/transloco-utils';
-import * as path from 'path';
-import { createWorkspace } from '../utils/create-workspace';
+import { TranslocoGlobalConfig } from '@jsverse/transloco-utils';
+
+import { createWorkspace } from './create-workspace';
 import en from './mocks/en';
 import es from './mocks/es';
 import scopeEn from './mocks/scope-en';
 import scopeEs from './mocks/scope-es';
+
 jest.mock('../utils/config');
+// eslint-disable-next-line import/order
 import { getConfig } from '../utils/config';
 
 const collectionPath = path.join(__dirname, '../collection.json');
@@ -25,7 +29,7 @@ describe('Join', () => {
   };
 
   beforeEach(async () => {
-    appTree = await createWorkspace(schematicRunner, appTree);
+    appTree = await createWorkspace(schematicRunner);
     appTree.create('src/assets/i18n/es.json', JSON.stringify(es));
     appTree.create('src/assets/i18n/en.json', JSON.stringify(en));
     (getConfig as jest.Mock).mockReturnValue(globalConfig);
@@ -38,73 +42,63 @@ describe('Join', () => {
     });
 
     it('should merge translation files that are not the default language to dist', async () => {
-      const tree = await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', options, appTree);
       expect(tree.files).toEqual(['/dist-i18n/es.json']);
       expect(tree.files).not.toEqual(['/dist-i18n/en.json']);
     });
 
     it('should merge translation files including the default language to dist', async () => {
-      const tree = await schematicRunner
-        .runSchematicAsync(
-          'join',
-          { ...options, includeDefaultLang: true },
-          appTree
-        )
-        .toPromise();
+      const tree = await schematicRunner.runSchematic(
+        'join',
+        { ...options, includeDefaultLang: true },
+        appTree,
+      );
       expect(tree.files).toEqual(['/dist-i18n/es.json', '/dist-i18n/en.json']);
     });
 
     it('should merge scopes correctly', async () => {
-      const tree = await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', options, appTree);
 
       expect(tree.readContent('/dist-i18n/es.json')).toMatchSnapshot();
     });
 
     it('should delete output file and pass on rerun', async () => {
       // first run.
-      await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      await schematicRunner.runSchematic('join', options, appTree);
       // second run.
-      const tree = await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', options, appTree);
       expect(tree.files).toEqual(['/dist-i18n/es.json']);
     });
 
     it(`should take default project's path`, async () => {
       appTree.create(
         'projects/bar/src/assets/i18n/en.json',
-        JSON.stringify(scopeEn)
+        JSON.stringify(scopeEn),
       );
       appTree.create(
         'projects/bar/src/assets/i18n/es.json',
-        JSON.stringify(scopeEs)
+        JSON.stringify(scopeEs),
       );
 
-      const tree = await schematicRunner
-        .runSchematicAsync('join', {}, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', {}, appTree);
       expect(tree.files).toEqual(['/dist-i18n/es.json']);
     });
 
     it('should take specific project path', async () => {
       appTree.create(
         'projects/baz/src/assets/i18n/en.json',
-        JSON.stringify(scopeEn)
+        JSON.stringify(scopeEn),
       );
       appTree.create(
         'projects/baz/src/assets/i18n/es.json',
-        JSON.stringify(scopeEs)
+        JSON.stringify(scopeEs),
       );
 
-      const tree = await schematicRunner
-        .runSchematicAsync('join', { project: 'baz' }, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic(
+        'join',
+        { project: 'baz' },
+        appTree,
+      );
       expect(tree.files).toEqual(['/dist-i18n/es.json']);
     });
   });
@@ -124,9 +118,7 @@ describe('Join', () => {
 
     it('should use scope map strategy', async () => {
       setup();
-      const tree = await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', options, appTree);
       expect(tree.readContent('/dist-i18n/es.json')).toMatchSnapshot();
     });
 
@@ -136,9 +128,7 @@ describe('Join', () => {
         scopeB: 'src/app/assets/i18n/scope2',
       };
       setup(scopePathMap);
-      const tree = await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', options, appTree);
 
       expect(tree.readContent('/dist-i18n/es.json')).toMatchSnapshot();
     });
@@ -149,9 +139,7 @@ describe('Join', () => {
         libB: 'projects/baz/src/assets/i18n',
       };
       setup(scopePathMap);
-      const tree = await schematicRunner
-        .runSchematicAsync('join', options, appTree)
-        .toPromise();
+      const tree = await schematicRunner.runSchematic('join', options, appTree);
 
       expect(tree.readContent('/dist-i18n/es.json')).toMatchSnapshot();
     });

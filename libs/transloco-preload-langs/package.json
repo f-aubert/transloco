@@ -1,17 +1,17 @@
 {
-  "name": "@ngneat/transloco-preload-langs",
-  "version": "4.0.1",
+  "name": "@jsverse/transloco-preload-langs",
+  "version": "7.0.1",
   "description": "Transloco preload languages while idle",
   "publishConfig": {
     "access": "public"
   },
   "bugs": {
-    "url": "https://github.com/ngneat/transloco/issues"
+    "url": "https://github.com/jsverse/transloco/issues"
   },
-  "homepage": "https://ngneat.github.io/transloco/docs/plugins/preload-langs",
+  "homepage": "https://jsverse.gitbook.io/transloco/plugins/preload-langs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ngneat/transloco"
+    "url": "https://github.com/jsverse/transloco"
   },
   "keywords": [
     "angular",
@@ -23,21 +23,9 @@
     "optimization"
   ],
   "license": "MIT",
-  "author": "Netanel Basal",
-  "contributors": [
-    {
-      "name": "Shahar Kazaz",
-      "url": "https://github.com/shaharkazaz"
-    },
-    {
-      "name": "Itay Oded",
-      "url": "https://github.com/itayod"
-    }
-  ],
   "peerDependencies": {
-    "@angular/core": ">=13.0.0",
-    "@ngneat/transloco": ">=4.0.0",
-    "rxjs": ">=6.0.0"
+    "@angular/core": ">=16.0.0",
+    "@jsverse/transloco": ">=7.0.0"
   },
   "dependencies": {
     "tslib": "^2.2.0"

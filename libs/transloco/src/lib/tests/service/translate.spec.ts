@@ -1,7 +1,9 @@
-import { createService, mockLangs } from '../mocks';
 import { fakeAsync } from '@angular/core/testing';
-import { loadLang } from './utils';
+
+import { createService, mockLangs } from '../mocks';
 import { TranslocoService } from '../../transloco.service';
+
+import { loadLang } from './utils';
 
 describe('translate', () => {
   let service: TranslocoService;
@@ -10,8 +12,8 @@ describe('translate', () => {
 
   it('should return the key when it is falsy', () => {
     expect(service.translate('')).toEqual('');
-    expect(service.translate(null as any)).toEqual(null);
-    expect(service.translate(undefined as any)).toEqual(undefined);
+    expect(service.translate(null as any)).toEqual(null as any);
+    expect(service.translate(undefined as any)).toEqual(undefined as any);
   });
 
   it('should return the value or the key based on the translation existing', fakeAsync(() => {
@@ -37,7 +39,7 @@ describe('translate', () => {
     const eng = mockLangs['en'];
     expect(service.translate('home')).toEqual(eng.home);
     expect(service.translate('alert', { value: 'val' })).toEqual(
-      'alert val english'
+      'alert val english',
     );
     expect(service.translate('a.b.c')).toEqual('a.b.c from list english');
     expect(service.translate('key.is.like.path')).toEqual('key is like path');
@@ -58,7 +60,7 @@ describe('translate', () => {
       'a.b.c from list english',
     ];
     expect(
-      service.translate(['home', 'alert', 'a.b.c'], { value: 'val' })
+      service.translate(['home', 'alert', 'a.b.c'], { value: 'val' }),
     ).toEqual(expected);
   }));
 
@@ -66,7 +68,7 @@ describe('translate', () => {
     loadLang(service, 'lazy-page/en');
     // should append the active lang by default
     expect(service.translate('title', {}, 'lazy-page')).toEqual(
-      'Admin Lazy english'
+      'Admin Lazy english',
     );
   }));
 
@@ -74,7 +76,7 @@ describe('translate', () => {
     loadLang(service, 'lazy-page/en');
     loadLang(service, 'lazy-page/es');
     expect(service.translate('title', {}, 'lazy-page/es')).toEqual(
-      'Admin Lazy spanish'
+      'Admin Lazy spanish',
     );
   }));
 });

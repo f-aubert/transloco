@@ -1,8 +1,11 @@
-import path from 'path';
+import path from 'node:path';
+
 import chalk from 'chalk';
-import glob from 'glob';
+import { glob } from 'glob';
 import chokidar from 'chokidar';
-import fsExtra from 'fs-extra';
+import { mkdirsSync } from 'fs-extra';
+import { TranslocoGlobalConfig } from '@jsverse/transloco-utils';
+
 import {
   coerceArray,
   cutPath,
@@ -18,7 +21,6 @@ import {
   ScopedLibsOptions,
   SetTranslationOptions,
 } from './scoped-libs.types';
-import { TranslocoGlobalConfig } from '@ngneat/transloco-utils';
 
 const libSrcExample = `
   e.g:
@@ -63,7 +65,7 @@ export default function run({
   for (const lib of scopedLibsArr) {
     if (!lib.src) {
       console.log(
-        chalk.red(`Please specify the library's src.`, libSrcExample)
+        chalk.red(`Please specify the library's src.`, libSrcExample),
       );
 
       return;
@@ -74,8 +76,8 @@ export default function run({
       console.log(
         chalk.red(
           `${path.join(lib.src, 'package.json')} is missing i18n information.`,
-          packageJsoni18nExample
-        )
+          packageJsoni18nExample,
+        ),
       );
 
       return;
@@ -85,8 +87,8 @@ export default function run({
       console.log(
         chalk.red(
           'please specify dist path, by either set "rootTranslationsPath" or specify the "dist" for each library',
-          libSrcExample
-        )
+          libSrcExample,
+        ),
       );
 
       return;
@@ -97,12 +99,8 @@ export default function run({
     for (const scopeConfig of pkg.content.i18n) {
       const { scope, strategy } = scopeConfig;
 
-      glob(
-        `${path.join(input, scopeConfig.path)}/**/*.json`,
-        {},
-        function (err, files) {
-          if (err) console.log(chalk.red(err));
-
+      glob(`${path.join(input, scopeConfig.path)}/**/*.json`)
+        .then((files) => {
           for (const output of outputs) {
             copyScopes({
               outputDir: output,
@@ -121,27 +119,28 @@ export default function run({
                   outputDir: output,
                   strategy,
                   files: [file],
+                  skipGitIgnoreUpdate,
                   scope,
                 });
               }
             });
           }
-        }
-      );
+        })
+        .catch((err) => console.log(chalk.red(err)));
     }
   }
 }
 
 function coerceScopedLibs(
   scopedLibs: TranslocoGlobalConfig['scopedLibs'],
-  defaultPath: TranslocoGlobalConfig['rootTranslationsPath']
+  defaultPath: TranslocoGlobalConfig['rootTranslationsPath'],
 ) {
   if (!scopedLibs?.length) {
     console.log(
       chalk.red(
-        'Please add "scopedLibs" configuration in transloco.config.js file.',
-        libSrcExample
-      )
+        'Please add "scopedLibs" configuration in transloco.config.ts file.',
+        libSrcExample,
+      ),
     );
 
     return [];
@@ -165,9 +164,9 @@ function copyScopes(options: CopyScopeOptions) {
   } else {
     resolvedOptions.outputDir = path.join(
       resolvedOptions.outputDir,
-      options.scope
+      options.scope,
     );
-    fsExtra.mkdirsSync(resolvedOptions.outputDir);
+    mkdirsSync(resolvedOptions.outputDir);
   }
 
   copyScopeTranslationFiles(resolvedOptions);
@@ -194,7 +193,7 @@ function copyScopeTranslationFiles(options: CopyScopeTranslationsOptions) {
       '✅ Copy translation from file:',
       chalk.blue(cutPath(translationFilePath)),
       'to:',
-      chalk.blue(cutPath(outputFilePath))
+      chalk.blue(cutPath(outputFilePath)),
     );
 
     if (!skipGitIgnoreUpdate) {

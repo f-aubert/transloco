@@ -7,9 +7,13 @@ export interface TranslocoGlobalConfig {
   keysManager?: {
     input?: string | string[];
     output?: string;
+    fileFormat?: 'json' | 'pot';
     marker?: string;
     addMissingKeys?: boolean;
+    emitErrorOnExtraKeys?: boolean;
     replace?: boolean;
-    defaultValue?: string;
+    defaultValue?: string | undefined;
+    unflat?: boolean;
+    sort?: boolean;
   };
 }

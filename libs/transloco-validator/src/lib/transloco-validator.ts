@@ -1,5 +1,6 @@
-import findDuplicatedPropertyKeys from 'find-duplicated-property-keys';
 import fs from 'fs';
+
+import findDuplicatedPropertyKeys from 'find-duplicated-property-keys';
 
 export default function (translationFilePaths: string[]) {
   translationFilePaths.forEach((path) => {
@@ -12,7 +13,7 @@ export default function (translationFilePaths: string[]) {
     const result = findDuplicatedPropertyKeys(translation);
     if (result.length) {
       throw new Error(
-        `Found duplicate keys: ${result.map(({ key }) => key)} (${path})`
+        `Found duplicate keys: ${result.map(({ key }) => key)} (${path})`,
       );
     }
   });

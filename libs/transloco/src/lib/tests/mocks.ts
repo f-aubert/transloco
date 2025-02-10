@@ -1,19 +1,18 @@
+import { map, timer } from 'rxjs';
+import { TestBed, tick } from '@angular/core/testing';
+import { Type } from '@angular/core';
+
+import { TranslocoLoader } from '../transloco.loader';
+import { PartialTranslocoConfig, translocoConfig } from '../transloco.config';
+import { TranslocoService } from '../transloco.service';
+import { TRANSLOCO_LOADING_TEMPLATE } from '../transloco-loading-template';
+import { TranslocoFallbackStrategy } from '../transloco-fallback-strategy';
+import { ProviderScope, Translation } from '../types';
 import {
-  DefaultTranspiler,
-  TRANSLOCO_TRANSPILER,
-} from '../transloco.transpiler';
-import { TRANSLOCO_LOADER } from '../transloco.loader';
-import {
-  TRANSLOCO_CONFIG,
-  TranslocoConfig,
-  translocoConfig,
-} from '../transloco.config';
-import { timer } from 'rxjs';
-import { map } from 'rxjs/operators';
-import {
-  DefaultHandler,
-  TRANSLOCO_MISSING_HANDLER,
-} from '../transloco-missing-handler';
+  provideTransloco,
+  provideTranslocoFallbackStrategy,
+} from '../transloco.providers';
+
 import en from './i18n-mocks/en.json';
 import es from './i18n-mocks/es.json';
 import enLazy from './i18n-mocks/lazy-page/en.json';
@@ -24,19 +23,6 @@ import enLazyScopeAlias from './i18n-mocks/lazy-scope-alias/en.json';
 import esLazyScopeAlias from './i18n-mocks/lazy-scope-alias/es.json';
 import enMF from './i18n-mocks/transpilers/messageformat/en.json';
 import esMF from './i18n-mocks/transpilers/messageformat/es.json';
-import { tick } from '@angular/core/testing';
-import { TranslocoService } from '../transloco.service';
-import { TRANSLOCO_LOADING_TEMPLATE } from '../transloco-loading-template';
-import {
-  DefaultInterceptor,
-  TRANSLOCO_INTERCEPTOR,
-} from '../transloco.interceptor';
-import {
-  DefaultFallbackStrategy,
-  TRANSLOCO_FALLBACK_STRATEGY,
-} from '../transloco-fallback-strategy';
-import { ProviderScope, Translation } from '../types';
-import { TRANSLOCO_SCOPE } from '../transloco-scope';
 
 export const mockLangs: Record<string, Translation> = {
   en,
@@ -51,51 +37,16 @@ export const mockLangs: Record<string, Translation> = {
   'transpilers/messageformat/es': esMF,
 };
 
-export const loader = {
+export class MockedLoader implements TranslocoLoader {
   getTranslation(lang: string) {
     return timer(1000).pipe(map(() => mockLangs[lang]));
-  },
-};
+  }
+}
 
-export const configProviderMock = (config = {}) => ({
-  provide: TRANSLOCO_CONFIG,
-  useValue: translocoConfig({ ...config, availableLangs: ['en', 'es'] }),
+export const providersMock = provideTransloco({
+  config: translocoConfig({ availableLangs: ['en', 'es'] }),
+  loader: MockedLoader,
 });
-
-export const loaderProviderMock = {
-  provide: TRANSLOCO_LOADER,
-  useValue: loader,
-};
-
-export const transpilerProviderMock = {
-  provide: TRANSLOCO_TRANSPILER,
-  useClass: DefaultTranspiler,
-};
-
-export const interceptorProviderMock = {
-  provide: TRANSLOCO_INTERCEPTOR,
-  useClass: DefaultInterceptor,
-};
-
-export const missingHandlerProviderMock = {
-  provide: TRANSLOCO_MISSING_HANDLER,
-  useClass: DefaultHandler,
-};
-
-export const fallbackStrategyProviderMock = {
-  provide: TRANSLOCO_FALLBACK_STRATEGY,
-  useClass: DefaultFallbackStrategy,
-  deps: [TRANSLOCO_CONFIG],
-};
-
-export const providersMock = [
-  configProviderMock(),
-  interceptorProviderMock,
-  loaderProviderMock,
-  transpilerProviderMock,
-  missingHandlerProviderMock,
-  fallbackStrategyProviderMock,
-];
 
 export function runLoader(times = 1) {
   tick(times * 1001);
@@ -103,9 +54,9 @@ export function runLoader(times = 1) {
 
 export function setlistenToLangChange(
   service: TranslocoService,
-  reRenderOnLangChange = true
+  reRenderOnLangChange = true,
 ) {
-  (service as any).mergedConfig.reRenderOnLangChange = reRenderOnLangChange;
+  service.config.reRenderOnLangChange = reRenderOnLangChange;
 }
 
 export const loadingTemplateMock = {
@@ -113,21 +64,36 @@ export const loadingTemplateMock = {
   useValue: 'loading template...',
 };
 
-export function createService(config: Partial<TranslocoConfig> = {}) {
-  return new TranslocoService(
-    loader,
-    new DefaultTranspiler(),
-    new DefaultHandler(),
-    new DefaultInterceptor(),
-    { defaultLang: 'en', availableLangs: ['en', 'es'], ...config },
-    new DefaultFallbackStrategy({ defaultLang: 'en', fallbackLang: 'en' })
-  );
+interface Providers {
+  loader?: Type<TranslocoLoader>;
+  fallback?: Type<TranslocoFallbackStrategy>;
 }
+export function createService(
+  config: PartialTranslocoConfig = {},
+  overrides: Providers = {},
+) {
+  const mergedConfig = translocoConfig({
+    defaultLang: 'en',
+    availableLangs: ['en', 'es'],
+    fallbackLang: 'en',
+    ...config,
+  });
 
-export const scopeAliasMock = {
-  provide: TRANSLOCO_SCOPE,
-  useValue: { scope: 'lazy-scope-alias', alias: 'myScopeAlias' },
-};
+  const providers: any[] = [
+    provideTransloco({
+      config: mergedConfig,
+      loader: overrides.loader === undefined ? MockedLoader : overrides.loader,
+    }),
+  ];
+
+  if (overrides.fallback) {
+    providers.push(provideTranslocoFallbackStrategy(overrides.fallback));
+  }
+
+  return TestBed.configureTestingModule({
+    providers,
+  }).inject(TranslocoService);
+}
 
 export const inlineScope: ProviderScope = {
   scope: 'todos',

@@ -1,37 +1,27 @@
-import {
-  Pipe,
-  PipeTransform,
-  ChangeDetectorRef,
-  Inject,
-  OnDestroy,
-} from '@angular/core';
-import { isNil } from '@ngneat/transloco';
+import { inject, Pipe, PipeTransform } from '@angular/core';
+import { isNil } from '@jsverse/transloco';
+
 import { getDefaultOptions } from '../shared';
-import { LOCALE_CONFIG } from '../transloco-locale.config';
-import { TranslocoLocaleService } from '../transloco-locale.service';
+import { TRANSLOCO_LOCALE_CONFIG } from '../transloco-locale.config';
 import {
-  NumberFormatOptions,
   Currency,
   Locale,
   LocaleConfig,
+  NumberFormatOptions,
 } from '../transloco-locale.types';
-import { TranslocoLocalePipe } from './transloco-locale.pipe';
+
+import { BaseLocalePipe } from './base-locale.pipe';
 
 @Pipe({
   name: 'translocoCurrency',
   pure: false,
+  standalone: true,
 })
 export class TranslocoCurrencyPipe
-  extends TranslocoLocalePipe
-  implements PipeTransform, OnDestroy
+  extends BaseLocalePipe
+  implements PipeTransform
 {
-  constructor(
-    protected translocoLocaleService: TranslocoLocaleService,
-    protected cdr: ChangeDetectorRef,
-    @Inject(LOCALE_CONFIG) private localeConfig: LocaleConfig
-  ) {
-    super(translocoLocaleService, cdr);
-  }
+  private localeConfig: LocaleConfig = inject(TRANSLOCO_LOCALE_CONFIG);
 
   /**
    * Transform a given number into the locale's currency format.
@@ -41,14 +31,16 @@ export class TranslocoCurrencyPipe
    * 1000000 | translocoCurrency: 'symbol' : {} : USD // $1,000,000.00
    * 1000000 | translocoCurrency: 'name' : {} : USD // 1,000,000.00 US dollars
    * 1000000 | translocoCurrency: 'symbol' : {minimumFractionDigits: 0 } : USD // $1,000,000
+   * 1000000 | translocoCurrency: 'symbol' : {minimumFractionDigits: 0 } : CAD // CA$1,000,000
+   * 1000000 | translocoCurrency: 'narrowSymbol' : {minimumFractionDigits: 0 } : CAD // $1,000,000
    *
    */
   transform(
     value: number | string,
-    display: 'code' | 'symbol' | 'name' = 'symbol',
+    display: 'code' | 'symbol' | 'narrowSymbol' | 'name' = 'symbol',
     numberFormatOptions: NumberFormatOptions = {},
     currencyCode?: Currency,
-    locale?: Locale
+    locale?: Locale,
   ): string {
     if (isNil(value)) return '';
     locale = this.getLocale(locale);
@@ -57,18 +49,14 @@ export class TranslocoCurrencyPipe
       ...getDefaultOptions(locale, 'currency', this.localeConfig),
       ...numberFormatOptions,
       currencyDisplay: display,
-      currency:
-        currencyCode || this.translocoLocaleService._resolveCurrencyCode(),
+      currency: currencyCode || this.localeService._resolveCurrencyCode(),
     };
-    return this.translocoLocaleService.localizeNumber(
+
+    return this.localeService.localizeNumber(
       value,
       'currency',
       locale,
-      options
+      options,
     );
-  }
-
-  ngOnDestroy(): void {
-    super.onDestroy();
   }
 }

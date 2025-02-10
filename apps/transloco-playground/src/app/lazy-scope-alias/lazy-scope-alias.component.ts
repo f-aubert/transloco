@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
-import { TRANSLOCO_SCOPE } from '@ngneat/transloco';
+
+import { TranslocoModule, provideTranslocoScope } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-lazy-scope-alias',
   templateUrl: './lazy-scope-alias.component.html',
+  styleUrls: ['lazy-scope-alias.component.scss'],
   providers: [
-    {
-      provide: TRANSLOCO_SCOPE,
-      useValue: { scope: 'lazy-scope-alias', alias: 'myScopeAlias' },
-    },
+    provideTranslocoScope({ scope: 'lazy-scope-alias', alias: 'myScopeAlias' }),
   ],
+  standalone: true,
+  imports: [TranslocoModule],
 })
-export class LazyScopeAliasComponent {}
+export default class LazyScopeAliasComponent {}

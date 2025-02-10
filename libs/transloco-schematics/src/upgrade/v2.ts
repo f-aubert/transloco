@@ -1,6 +1,7 @@
+import * as p from 'node:path';
+import * as fs from 'node:fs';
+
 import { sync as globSync } from 'glob';
-import * as p from 'path';
-import * as fs from 'fs';
 
 export function run(path) {
   console.log('\x1b[4m%s\x1b[0m', '⬆️ Starting v2 upgrade script ⬆️');
@@ -45,12 +46,12 @@ export function run(path) {
             let callEnd = ')';
             const pipes = (param && param.split('|')) || [];
             const [paramsPipe] = pipes.filter((pipe) =>
-              pipe.includes('translocoParams')
+              pipe.includes('translocoParams'),
             );
             if (paramsPipe) {
               const paramValue = paramsPipe.substring(
                 paramsPipe.indexOf('{'),
-                paramsPipe.lastIndexOf('}') + 1
+                paramsPipe.lastIndexOf('}') + 1,
               );
               if (paramValue) {
                 callEnd = `, ${paramValue})`;
@@ -64,11 +65,11 @@ export function run(path) {
                   `${rawKey}${param}`,
                   `${varName}('${key}'${callEnd} ${pipes
                     .filter((pipe) => !pipe.includes('translocoParams'))
-                    .join('|')}`
+                    .join('|')}`,
                 )
               : newStructuralStr.replace(
                   rawKey,
-                  `${varName}('${key}'${callEnd}`
+                  `${varName}('${key}'${callEnd}`,
                 );
             keySearch = keyRegex.exec(matchedStr);
           }
@@ -84,7 +85,7 @@ export function run(path) {
   const modules = globSync(`${path}.module.ts`);
   for (const file of modules) {
     let str = fs.readFileSync(file).toString('utf8');
-    if (!str.includes('@ngneat/transloco')) continue;
+    if (!str.includes('@jsverse/transloco')) continue;
     /** change listenToLangChange to renderOnce */
     str = str.replace('listenToLangChange', 'reRenderOnLangChange');
     /** Remove scopeStrategy */
@@ -93,7 +94,7 @@ export function run(path) {
     if (!str.includes('availableLangs')) {
       str = str.replace(
         /((\s*)defaultLang:(.*?),)/,
-        (str, g1, g2, g3) => `${g1}${g2}availableLangs: [${g3.trim()}],`
+        (str, g1, g2, g3) => `${g1}${g2}availableLangs: [${g3.trim()}],`,
       );
     }
     fs.writeFileSync(file, str, { encoding: 'utf8' });

@@ -1,37 +1,35 @@
-import { Component, OnDestroy } from '@angular/core';
-import { LangDefinition, TranslocoService } from '@ngneat/transloco';
-import { Subscription } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { take } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { LangDefinition, TranslocoService } from '@jsverse/transloco';
+
+import { AppSrcDirective } from './app-src.directive';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  standalone: true,
+  imports: [RouterModule, AppSrcDirective],
 })
-export class AppComponent implements OnDestroy {
-  private subscription: Subscription = Subscription.EMPTY;
-  availableLangs: LangDefinition[];
-
-  constructor(private service: TranslocoService) {
-    this.availableLangs = this.service.getAvailableLangs() as LangDefinition[];
-  }
+export class AppComponent {
+  private destroyRef = inject(DestroyRef);
+  service = inject(TranslocoService);
+  availableLangs = this.service.getAvailableLangs() as LangDefinition[];
 
   get activeLang() {
     return this.service.getActiveLang();
   }
 
-  change(lang: string) {
+  changeLang(lang: string) {
     // Ensure new active lang is loaded
-    this.subscription.unsubscribe();
-    this.subscription = this.service
+    this.service
       .load(lang)
-      .pipe(take(1))
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.service.setActiveLang(lang);
       });
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 }

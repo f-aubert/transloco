@@ -1,13 +1,16 @@
 import { APP_INITIALIZER } from '@angular/core';
+import { switchMap } from 'rxjs';
+
+import { TranslocoService } from '@jsverse/transloco';
+
 import { UserService } from './user.service';
-import { TranslocoService } from '@ngneat/transloco';
-import {switchMap} from "rxjs";
 
 export function preloadUser(
   userService: UserService,
-  transloco: TranslocoService
+  transloco: TranslocoService,
 ) {
-  return () => userService.getUser().pipe(switchMap(({ lang }) => transloco.load(lang)));
+  return () =>
+    userService.getUser().pipe(switchMap(({ lang }) => transloco.load(lang)));
 }
 
 export const preLoad = {

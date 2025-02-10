@@ -3,9 +3,12 @@ import { InjectionToken, Injectable } from '@angular/core';
 import { TranslocoConfig } from './transloco.config';
 import { HashMap } from './types';
 
-export const TRANSLOCO_MISSING_HANDLER = new InjectionToken(
-  'TRANSLOCO_MISSING_HANDLER'
-);
+export const TRANSLOCO_MISSING_HANDLER =
+  new InjectionToken<TranslocoMissingHandlerData>(
+    typeof ngDevMode !== 'undefined' && ngDevMode
+      ? 'TRANSLOCO_MISSING_HANDLER'
+      : '',
+  );
 
 export interface TranslocoMissingHandlerData extends TranslocoConfig {
   activeLang: string;
@@ -16,9 +19,9 @@ export interface TranslocoMissingHandler {
 }
 
 @Injectable()
-export class DefaultHandler implements TranslocoMissingHandler {
+export class DefaultMissingHandler implements TranslocoMissingHandler {
   handle(key: string, config: TranslocoConfig) {
-    if (config.missingHandler!.logMissingKey && !config.prodMode) {
+    if (config.missingHandler.logMissingKey && !config.prodMode) {
       const msg = `Missing translation for '${key}'`;
       console.warn(`%c ${msg}`, 'font-size: 12px; color: red');
     }

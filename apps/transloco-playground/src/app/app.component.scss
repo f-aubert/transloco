@@ -4,15 +4,7 @@
 
 .navbar {
   box-shadow: 0 0 2px;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 1;
-}
-
-.container {
-  margin-top: 130px;
-  z-index: 0;
+  height: 66px;
 }
 
 .btn:focus {
@@ -33,4 +25,9 @@
 .btn-primary:not(:disabled):not(.disabled):active {
   background-color: #cd298d;
   border-color: #cd298d;
+}
+
+main {
+  height: calc(100vh - 66px);
+  overflow: auto;
 }

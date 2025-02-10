@@ -1,13 +1,15 @@
 {
+  "name": "transloco-persist-translations",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
   "sourceRoot": "libs/transloco-persist-translations/src",
   "prefix": "transloco-nx-shell",
+  "tags": [],
   "targets": {
     "build": {
-      "executor": "@nrwl/angular:package",
-      "outputs": ["dist/libs/transloco-persist-translations"],
+      "executor": "@nx/angular:package",
+      "outputs": ["{workspaceRoot}/dist/libs/transloco-persist-translations"],
       "options": {
-        "updateBuildableProjectDepsInPackageJson": false,
         "project": "libs/transloco-persist-translations/ng-package.json"
       },
       "configurations": {
@@ -29,18 +31,8 @@
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
-      "options": {
-        "lintFilePatterns": [
-          "libs/transloco-persist-translations/src/**/*.ts",
-          "libs/transloco-persist-translations/src/**/*.html"
-        ]
-      },
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
-    },
-    "version": {
-      "executor": "@jscutlery/semver:version"
     }
-  },
-  "tags": []
+  }
 }

@@ -1,8 +1,10 @@
 import { fakeAsync } from '@angular/core/testing';
-import { filter, pluck } from 'rxjs/operators';
+import { filter, map } from 'rxjs';
+
 import { createService, runLoader } from '../mocks';
-import { loadLang } from './utils';
 import { TranslocoService } from '../../transloco.service';
+
+import { loadLang } from './utils';
 
 describe('load', () => {
   let service: TranslocoService;
@@ -14,7 +16,7 @@ describe('load', () => {
     service.events$
       .pipe(
         filter((e: any) => e.type === 'translationLoadSuccess'),
-        pluck('payload')
+        map((e) => e.payload),
       )
       .subscribe(spy);
     loadLang(service);
@@ -29,7 +31,7 @@ describe('load', () => {
     service.events$
       .pipe(
         filter((e: any) => e.type === 'translationLoadSuccess'),
-        pluck('payload')
+        map((e) => e.payload),
       )
       .subscribe(spy);
     loadLang(service, 'admin-page/en');
@@ -40,12 +42,9 @@ describe('load', () => {
   }));
 
   it('should trigger lang changed once loaded', fakeAsync(() => {
-    const spy = jasmine.createSpy();
     service.events$
-      .pipe(
-        filter((e: any) => e.type === 'langChanged'),
-      )
-      .subscribe(event => {
+      .pipe(filter((e: any) => e.type === 'langChanged'))
+      .subscribe((event) => {
         expect(event.type).toEqual('langChanged');
       });
     loadLang(service, 'admin-page/en');
@@ -54,7 +53,7 @@ describe('load', () => {
   it('should load the translation using the loader', fakeAsync(() => {
     const loaderSpy = spyOn(
       (service as any).loader,
-      'getTranslation'
+      'getTranslation',
     ).and.callThrough();
     service.load('en').subscribe();
     runLoader();

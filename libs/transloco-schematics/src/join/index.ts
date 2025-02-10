@@ -4,6 +4,9 @@ import {
   SchematicsException,
   Tree,
 } from '@angular-devkit/schematics';
+import { normalize } from '@angular-devkit/core';
+import { existsSync, removeSync } from 'fs-extra';
+
 import { TranslationFileFormat } from '../types';
 import {
   getDefaultLang,
@@ -15,14 +18,13 @@ import {
   hasFiles,
   hasSubdirs,
 } from '../utils/transloco';
+
 import { SchemaOptions } from './schema';
-import { normalize } from '@angular-devkit/core';
-import * as fs from 'fs-extra';
 
 type Builder = (
   tree: Tree,
   path: string,
-  content: Record<string, unknown>
+  content: Record<string, unknown>,
 ) => void;
 
 function reduceTranslations(
@@ -30,7 +32,7 @@ function reduceTranslations(
   dirPath: string,
   translationJson,
   lang: string,
-  key = ''
+  key = '',
 ) {
   const dir = host.getDir(dirPath);
   if (!hasFiles(dir) && !hasSubdirs(dir)) return translationJson;
@@ -39,7 +41,7 @@ function reduceTranslations(
     .forEach((fileName) => {
       if (translationJson[key]) {
         throw new SchematicsException(
-          `key: ${key} already exist in translation file, please rename it and rerun the command.`
+          `key: ${key} already exist in translation file, please rename it and rerun the command.`,
         );
       }
       translationJson[key] = getJsonFileContent(fileName, dir);
@@ -53,7 +55,7 @@ function reduceTranslations(
         normalize(subDir.path).substr(1),
         translationJson,
         lang,
-        nestedKey
+        nestedKey,
       );
     });
   }
@@ -62,15 +64,15 @@ function reduceTranslations(
 }
 
 function deletePrevFiles(host: Tree, options: SchemaOptions) {
-  if (fs.existsSync(options.outDir)) {
-    fs.removeSync(options.outDir);
+  if (existsSync(options.outDir)) {
+    removeSync(options.outDir);
   }
 }
 
 function jsonBuilder(
   tree: Tree,
   path: string,
-  content: Record<string, unknown>
+  content: Record<string, unknown>,
 ) {
   tree.create(`${path}.json`, JSON.stringify(content, null, 2));
 }
@@ -97,7 +99,7 @@ export default function (options: SchemaOptions): Rule {
     const defaultLang = getDefaultLang(options);
     if (options.includeDefaultLang && !defaultLang) {
       throw new SchematicsException(
-        `Please specify the default project's language using --default-Lang or in transloco.config.js file.`
+        `Please specify the default project's language using --default-Lang or in transloco.config.ts file.`,
       );
     }
     let rootTranslations = getTranslationFiles(host, root);
@@ -115,7 +117,7 @@ export default function (options: SchemaOptions): Rule {
           entryPath.path,
           t.translation,
           t.lang,
-          entryPath.scope
+          entryPath.scope,
         );
       }, t.translation),
     }));

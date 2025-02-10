@@ -3,27 +3,29 @@ import {
   Spectator,
   SpectatorHost,
 } from '@ngneat/spectator';
-import { createFactory } from './directive/shared';
 import { fakeAsync } from '@angular/core/testing';
+import { Component } from '@angular/core';
+
+import { TranslocoService } from '../transloco.service';
+import { TranslocoDirective } from '../transloco.directive';
+import { TranslocoModule } from '../transloco.module';
+import { provideTranslocoScope } from '../transloco.providers';
+
+import { listenToLangChangesProvider } from './pipe/pipe-integration.spec';
 import {
   inlineScope,
   providersMock,
   runLoader,
   setlistenToLangChange,
 } from './mocks';
-import { Component } from '@angular/core';
-import { listenToLangChangesProvider } from './pipe/pipe-integration.spec';
-import { TRANSLOCO_SCOPE } from '../transloco-scope';
-import { TranslocoService } from '../transloco.service';
-import { TranslocoDirective } from '../transloco.directive';
-import { TranslocoModule } from '../transloco.module';
+import { createFactory } from './directive/shared';
 
-const inlineLoaders = {
-  provide: TRANSLOCO_SCOPE,
-  useValue: inlineScope,
-};
+const inlineLoaders = provideTranslocoScope(inlineScope);
 
-function updateView<T>(spectator: Spectator<T>, service: TranslocoService) {
+function updateView<T>(
+  spectator: Spectator<T> | SpectatorHost<T>,
+  service: TranslocoService,
+) {
   runLoader();
   spectator.detectChanges();
   expect(spectator.query('span')).toHaveText('Todos Title English');
@@ -49,7 +51,7 @@ describe('Inline loaders: directive', () => {
         <h1>{{ t('home') }}</h1>
       </ng-container>
     `,
-      { detectChanges: false }
+      { detectChanges: false },
     );
 
     const service = spectator.inject(TranslocoService);

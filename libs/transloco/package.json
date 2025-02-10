@@ -1,18 +1,18 @@
 {
-  "name": "@ngneat/transloco",
-  "version": "4.2.6",
+  "name": "@jsverse/transloco",
+  "version": "7.5.1",
   "description": "The internationalization (i18n) library for Angular",
   "schematics": "./schematics/src/collection.json",
   "publishConfig": {
     "access": "public"
   },
   "bugs": {
-    "url": "https://github.com/ngneat/transloco/issues"
+    "url": "https://github.com/jsverse/transloco/issues"
   },
-  "homepage": "https://ngneat.github.io/transloco/",
+  "homepage": "https://jsverse.gitbook.io/transloco/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ngneat/transloco"
+    "url": "https://github.com/jsverse/transloco"
   },
   "keywords": [
     "angular",
@@ -23,33 +23,16 @@
     "angular i18n",
     "transloco"
   ],
-  "author": {
-    "name": "Netanel Basal",
-    "email": "netanel7799@gmail.com",
-    "url": "https://netbasal.com"
-  },
-  "contributors": [
-    {
-      "name": "Shahar Kazaz",
-      "url": "https://github.com/shaharkazaz"
-    },
-    {
-      "name": "Itay Oded",
-      "url": "https://github.com/itayod"
-    }
-  ],
   "license": "MIT",
   "peerDependencies": {
-    "@angular/core": ">=13.0.0",
-    "rxjs": ">=6.0.0",
-    "fs-extra": ">=9.1.0",
-    "glob": ">=7.1.7"
+    "@angular/core": ">=16.0.0"
   },
   "dependencies": {
+    "fs-extra": "^11.0.0",
+    "glob": "^10.0.0",
     "tslib": "^2.2.0",
-    "flat": "5.0.2",
-    "@ngneat/transloco-utils": "^3.0.1",
-    "replace-in-file": "^6.2.0",
+    "@jsverse/transloco-utils": "^7.0.0",
+    "replace-in-file": "^7.0.1",
     "ora": "^5.4.1",
     "lodash.kebabcase": "^4.1.1"
   }

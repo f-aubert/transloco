@@ -1,8 +1,10 @@
 import { fakeAsync } from '@angular/core/testing';
-import { loadLang } from './utils';
+
 import { createService } from '../mocks';
 import { HashMap } from '../../types';
 import { TranslocoService } from '../../transloco.service';
+
+import { loadLang } from './utils';
 
 describe('translateObject', () => {
   let service: TranslocoService;
@@ -27,7 +29,7 @@ describe('translateObject', () => {
     it('should should support params', fakeAsync(() => {
       loadLang(service);
       expect(
-        service.translateObject('a.b', { c: { fromList: 'Hello' } })
+        service.translateObject('a.b', { c: { fromList: 'Hello' } }),
       ).toEqual({
         c: 'a.b.c Hello english',
       });
@@ -37,13 +39,15 @@ describe('translateObject', () => {
   describe('The key is an array', () => {
     it('should return two objects', fakeAsync(() => {
       loadLang(service);
-      expect(service.translateObject(['a', 'nested'])).toEqual([{
-        b: { c: 'a.b.c {{fromList}} english' },
-      },{
-        "title": "Title english",
-        "desc": "Desc english"
-      },
-    ]);
+      expect(service.translateObject(['a', 'nested'])).toEqual([
+        {
+          b: { c: 'a.b.c {{fromList}} english' },
+        },
+        {
+          title: 'Title english',
+          desc: 'Desc english',
+        },
+      ]);
     }));
   });
 

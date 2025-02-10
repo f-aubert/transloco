@@ -1,4 +1,5 @@
 import { fakeAsync } from '@angular/core/testing';
+
 import { createService, runLoader, inlineScope } from '../mocks';
 import { TranslocoService } from '../../transloco.service';
 
@@ -99,7 +100,7 @@ describe('selectTranslate', () => {
       .selectTranslate(
         'params',
         { value: 'Transloco' },
-        'transpilers/messageformat'
+        'transpilers/messageformat',
       )
       .subscribe(spy);
     runLoader();
@@ -112,7 +113,7 @@ describe('selectTranslate', () => {
       .selectTranslate(
         'params',
         { value: 'Transloco' },
-        'transpilers/messageformat/es'
+        'transpilers/messageformat/es',
       )
       .subscribe(spy);
     runLoader();
@@ -132,11 +133,42 @@ describe('selectTranslate', () => {
         .selectTranslate(
           'withParam',
           { param: 'Transloco' },
-          { scope: 'lazy-page' }
+          { scope: 'lazy-page' },
         )
         .subscribe(spy);
       runLoader();
       expect(spy).toHaveBeenCalledWith('Admin Lazy english Transloco');
     }));
+
+    describe('Scope/lang arrays', () => {
+      it('should support scope object array', fakeAsync(() => {
+        const spy = jasmine.createSpy();
+        service
+          .selectTranslate('withParam', { param: 'Transloco' }, [
+            { scope: 'lazy-page' },
+          ])
+          .subscribe(spy);
+        runLoader();
+        expect(spy).toHaveBeenCalledWith('Admin Lazy english Transloco');
+      }));
+
+      it('should support string array', fakeAsync(() => {
+        const spy = jasmine.createSpy();
+        service
+          .selectTranslate('withParam', { param: 'Transloco' }, ['lazy-page'])
+          .subscribe(spy);
+        runLoader();
+        expect(spy).toHaveBeenCalledWith('Admin Lazy english Transloco');
+        service
+          .selectTranslate('params', { value: 'Transloco' }, [
+            'transpilers/messageformat/es',
+          ])
+          .subscribe(spy);
+        runLoader();
+        expect(spy).toHaveBeenCalledWith(
+          'Replaces standard Transloco - spanish',
+        );
+      }));
+    });
   });
 });

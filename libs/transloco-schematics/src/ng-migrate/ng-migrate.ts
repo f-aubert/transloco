@@ -1,6 +1,6 @@
 import * as kebabCase from 'lodash.kebabcase';
 import { sync as globSync } from 'glob';
-import * as fs from 'fs-extra';
+import { readFileSync, outputFileSync, outputJsonSync } from 'fs-extra';
 
 const regex =
   /<([\w-]*)\s*(?=[^>]*i18n)[^>]*i18n(?:(?:=("|')(?<attrValue>[^>]*?)\2)|(?:-(?<propName>[\w-]*)[^>]*\4=("|')(?<propValue>[^>]*?)\5))?[^>]*(?:>(?<innerText>[^]*?)<\/\1)?/g;
@@ -9,11 +9,11 @@ export function run({ input, output, langs }) {
   const files = globSync(`${process.cwd()}/${input}/**/*.html`);
   let translation = {};
   for (const filePath of files) {
-    const tpl = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    const tpl = readFileSync(filePath, { encoding: 'utf-8' });
     translation = { ...translation, ...getTranslation(tpl) };
 
     const newTpl = getNewTemplate(tpl);
-    fs.outputFileSync(filePath, newTpl);
+    outputFileSync(filePath, newTpl);
   }
 
   for (const lang of langs) {
@@ -23,7 +23,7 @@ export function run({ input, output, langs }) {
         acc[key] = translation[key];
         return acc;
       }, {});
-    fs.outputJsonSync(`${process.cwd()}/${output}/${lang}.json`, sorted, {
+    outputJsonSync(`${process.cwd()}/${output}/${lang}.json`, sorted, {
       spaces: 2,
     });
   }
@@ -31,7 +31,7 @@ export function run({ input, output, langs }) {
   console.log('\n              🌵 Done! 🌵');
   console.log('Welcome to a better translation experience 🌐');
   console.log(
-    '\nFor more information about this script please visit 👉 https://ngneat.github.io/transloco/docs/migration/angular\n'
+    '\nFor more information about this script please visit 👉 https://jsverse.github.io/transloco/docs/migration/angular\n',
   );
 }
 
@@ -112,7 +112,7 @@ function getNewTemplate(template) {
       propName,
       propMark,
       propValue,
-      innerText
+      innerText,
     ) {
       let replace = ' i18n';
       const key = resolveKey(attrValue, propValue || innerText);
@@ -129,6 +129,6 @@ function getNewTemplate(template) {
       }
 
       return match.replace(replace, '').replace(value, newValue);
-    }
+    },
   );
 }

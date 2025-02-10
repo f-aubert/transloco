@@ -1,26 +1,26 @@
-import { createService, runLoader } from '../mocks';
 import { fakeAsync } from '@angular/core/testing';
+
+import { createService, runLoader } from '../mocks';
 import { TranslocoService } from '../../transloco.service';
 
 describe('missingHandler', () => {
   describe('missingHandler.allowEmpty', () => {
-    const service: any = createService({
-      missingHandler: { allowEmpty: true },
-    });
-
     it('should not call handle', () => {
+      const service = createService({
+        missingHandler: { allowEmpty: true },
+      });
       service.setTranslation(
         {
           empty: '',
         },
-        'en'
+        'en',
       );
 
-      spyOn(service.missingHandler, 'handle').and.callThrough();
+      spyOn((service as any).missingHandler, 'handle').and.callThrough();
       const value = service.translate('empty');
 
       expect(value).toEqual('');
-      expect(service.missingHandler.handle).not.toHaveBeenCalled();
+      expect((service as any).missingHandler.handle).not.toHaveBeenCalled();
     });
   });
 
@@ -38,7 +38,7 @@ describe('missingHandler', () => {
     it('should load the active and the fallback lang', fakeAsync(() => {
       const loaderSpy = spyOn(
         (service as any).loader,
-        'getTranslation'
+        'getTranslation',
       ).and.callThrough();
       service.load('en').subscribe();
       runLoader();
@@ -62,14 +62,14 @@ describe('missingHandler', () => {
       service.load('en').subscribe();
       runLoader(2000);
       expect(service.translate('empty', { value: 'hello' })).toEqual(
-        "I'm a spanish empty fallback hello"
+        "I'm a spanish empty fallback hello",
       );
     }));
 
     it('should load the scope fallback when working with scopes', fakeAsync(() => {
       const loaderSpy = spyOn(
         (service as any).loader,
-        'getTranslation'
+        'getTranslation',
       ).and.callThrough();
       service.load('lazy-page/en').subscribe();
       runLoader(2000);
@@ -78,12 +78,12 @@ describe('missingHandler', () => {
         ['lazy-page/es', { scope: 'lazy-page' }],
       ]);
       expect(service.translate('empty', {}, 'lazy-page/en')).toEqual(
-        'resolved from es'
+        'resolved from es',
       );
     }));
 
     it('should respect allow empty', fakeAsync(() => {
-      (service as any).mergedConfig.missingHandler.allowEmpty = true;
+      service.config.missingHandler.allowEmpty = true;
       spyOn((service as any).loader, 'getTranslation').and.callThrough();
       service.load('en').subscribe();
       runLoader(2000);

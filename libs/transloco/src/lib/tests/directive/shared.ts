@@ -1,9 +1,11 @@
 import { createHostFactory, SpectatorHost } from '@ngneat/spectator';
+import { Provider } from '@angular/core';
+
 import { providersMock, runLoader, setlistenToLangChange } from '../mocks';
 import { TranslocoDirective } from '../../transloco.directive';
 import { TranslocoService } from '../../transloco.service';
 
-export function createFactory(providers: any[] = []) {
+export function createFactory(providers: Provider[] = []) {
   return createHostFactory({
     component: TranslocoDirective,
     providers: [providersMock, providers],
@@ -12,7 +14,7 @@ export function createFactory(providers: any[] = []) {
 
 function initScopeTest(
   host: SpectatorHost<TranslocoDirective>,
-  service: TranslocoService
+  service: TranslocoService,
 ) {
   setlistenToLangChange(service);
   host.detectChanges();
@@ -23,7 +25,7 @@ function initScopeTest(
 
 export function testMergedScopedTranslation(
   spectator: SpectatorHost<TranslocoDirective>,
-  preload?: boolean
+  preload?: boolean,
 ) {
   const service = spectator.inject(TranslocoService);
   if (preload) {
@@ -31,7 +33,7 @@ export function testMergedScopedTranslation(
   }
   initScopeTest(spectator, service);
   expect(spectator.queryHost('.global')).toHaveText(
-    preload ? 'home english' : ''
+    preload ? 'home english' : '',
   );
   expect(spectator.queryHost('.scoped')).toHaveText('Admin Lazy english');
   if (preload) {
@@ -42,13 +44,13 @@ export function testMergedScopedTranslation(
   runLoader();
   spectator.detectChanges();
   expect(spectator.queryHost('.global')).toHaveText(
-    preload ? 'home spanish' : ''
+    preload ? 'home spanish' : '',
   );
   expect(spectator.queryHost('.scoped')).toHaveText('Admin Lazy spanish');
 }
 
 export function testScopedTranslation(
-  spectator: SpectatorHost<TranslocoDirective>
+  spectator: SpectatorHost<TranslocoDirective>,
 ) {
   const service = spectator.inject(TranslocoService);
   initScopeTest(spectator, service);
@@ -59,8 +61,8 @@ export function testScopedTranslation(
   expect(spectator.queryHost('div')).toHaveText('Admin Lazy spanish');
 }
 
-export function testTranslationWithRead(
-  spectator: SpectatorHost<TranslocoDirective>
+export function testTranslationWithPrefix(
+  spectator: SpectatorHost<TranslocoDirective>,
 ) {
   const service = spectator.inject(TranslocoService);
   initScopeTest(spectator, service);
@@ -73,7 +75,7 @@ export function testTranslationWithRead(
 
 export function preloadTranslations(
   spectator: SpectatorHost<TranslocoDirective>,
-  lang = 'en'
+  lang = 'en',
 ) {
   const service = spectator.inject(TranslocoService);
   service.load(lang).subscribe();

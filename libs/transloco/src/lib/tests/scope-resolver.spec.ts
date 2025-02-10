@@ -8,6 +8,11 @@ describe('ScopeResolver', () => {
     spy = jasmine.createSpy('setScopeAlias');
     resolver = new ScopeResolver({
       _setScopeAlias: spy,
+      config: {
+        scopes: {
+          keepCasing: false,
+        },
+      },
     } as any);
   });
 
@@ -16,7 +21,7 @@ describe('ScopeResolver', () => {
       resolver.resolve({
         inline: 'lazy-page',
         provider: 'admin-page',
-      })
+      }),
     ).toEqual('lazy-page');
   });
 
@@ -25,7 +30,7 @@ describe('ScopeResolver', () => {
       resolver.resolve({
         inline: undefined,
         provider: 'admin-page',
-      })
+      }),
     ).toEqual('admin-page');
   });
 
@@ -34,7 +39,7 @@ describe('ScopeResolver', () => {
       resolver.resolve({
         inline: undefined,
         provider: undefined,
-      })
+      }),
     ).toEqual(undefined);
   });
 
@@ -46,7 +51,7 @@ describe('ScopeResolver', () => {
           scope: 'admin-page',
           alias: 'admin',
         },
-      })
+      }),
     ).toEqual('admin-page');
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith('admin-page', 'admin');
@@ -59,10 +64,43 @@ describe('ScopeResolver', () => {
         provider: {
           scope: 'admin-page',
         },
-      })
+      }),
     ).toEqual('admin-page');
     // one from before
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith('admin-page', 'adminPage');
+  });
+
+  it('should return provider scope with object and set the alias as the scope name if not provided', () => {
+    expect(
+      resolver.resolve({
+        inline: undefined,
+        provider: {
+          scope: 'nested/scopes/admin-page',
+        },
+      }),
+    ).toEqual('nested/scopes/admin-page');
+    // one from before
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      'nested/scopes/admin-page',
+      'nestedScopesAdminPage',
+    );
+  });
+
+  it('should keep the original scope name', () => {
+    resolver = new ScopeResolver({
+      _setScopeAlias: spy,
+      config: { scopes: { keepCasing: true } },
+    } as any);
+
+    expect(
+      resolver.resolve({
+        inline: undefined,
+        provider: { scope: 'AdMiN-pAgE' },
+      }),
+    ).toEqual('AdMiN-pAgE');
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith('AdMiN-pAgE', 'AdMiN-pAgE');
   });
 });
